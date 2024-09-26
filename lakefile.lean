@@ -12,4 +12,5 @@ require "leanprover-community" / "mathlib"
 
 @[default_target]
 lean_lib «ErdosStoneSimonovits» where
+  globs := #[.submodules `ErdosStoneSimonovits]
   -- add any library configuration options here
