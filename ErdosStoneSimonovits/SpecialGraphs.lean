@@ -261,13 +261,9 @@ theorem Colorable.map (f : V ↪ β) :
 variable [DecidableEq V] [Fintype β] [DecidableRel G.Adj]
   {R : Type*} [LinearOrderedSemiring R] {x : R}
 
-  -- Nat.cast_le.{u_1} {α : Type u_1} [AddMonoidWithOne α] [PartialOrder α]
-  -- [CovariantClass α α (fun x1 x2 ↦ x1 + x2) fun x1 x2 ↦ x1 ≤ x2] [ZeroLEOneClass α] [CharZero α] {m n : ℕ} :
-  -- ↑m ≤ ↑n ↔ m ≤ n
-
 /-- If `A` is not `n`-colorable and `G` is `n`-colorable on vertex type
-`|V| ≤ |β|`, the simple graph `B` constructed via the embedding `V ↪ β` does
-not contain `A` as an isomorphic subgraph. -/
+`|V| ≤ |β|`, the simple graph `B` constructed by mapping `G` via an embedding
+`V ↪ β` does not contain `A` as an isomorphic subgraph. -/
 theorem lt_extremalNumber_of_colorable
     (h_card_le : Fintype.card V ≤ Fintype.card β)
     (nh_col : ¬A.Colorable n) (h_col : G.Colorable n)

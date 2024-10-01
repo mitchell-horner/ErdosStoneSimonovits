@@ -209,7 +209,7 @@ section DeleteIncidenceSet
 abbrev deleteIncidenceSet (x : V) (G : SimpleGraph V) :
   SimpleGraph V := G.deleteEdges (G.incidenceSet x)
 
-/-- Deleting the edges from the incidence set of a vertex restrict the edges
+/-- Deleting the edges from the incidence set of a vertex restricts the edges
 to the set `{x}ᶜ`. -/
 lemma deleteIncidenceSet_eq_restrict_compl_singleton
     (G : SimpleGraph V) (x : V) :
@@ -238,7 +238,7 @@ theorem deleteIncidenceSet_adj :
   simp_rw [deleteIncidenceSet_eq_restrict_compl_singleton G x,
     restrict_adj, Set.mem_compl_singleton_iff]
 
-/-- Deleting the edges from the incidence set of a vertex restrict the edges
+/-- Deleting the edges from the incidence set of a vertex restricts the edges
 to the set `G.support \ {x}`. -/
 lemma deleteIncidenceSet_eq_restrict_support_diff_singleton (x : V) :
     G.deleteIncidenceSet x = G.restrict (G.support \ {x}) := by
@@ -286,7 +286,7 @@ instance {G : SimpleGraph V} [DecidableRel G.Adj] :
   rw [deleteIncidenceSet_eq_restrict_compl_singleton G x]
   infer_instance
 
-/-- Deleteting the incidence set of the vertex `x` from `G` deletes exactly
+/-- Deleting the incidence set of the vertex `x` from `G` deletes exactly
 `G.degree x` edges from `G`. -/
 theorem card_edgeFinset_deleteIncidenceSet
     (G : SimpleGraph V) [DecidableRel G.Adj] (x : V) :
@@ -315,7 +315,7 @@ theorem edgeFinset_deleteIncidenceSet
   let e' : G.edgeSet := ⟨e, h⟩
   rw [show e = e'.val by rfl, edge_mem_incidenceSet_iff]
 
-/-- Deleteting the incidence set of the vertex `x` from `G` deletes at most one
+/-- Deleting the incidence set of the vertex `x` from `G` deletes at most one
 vertex from the support of `G`. -/
 theorem card_support_deleteIncidenceSet
     (G : SimpleGraph V) [DecidableRel G.Adj] {x : V} (hx : x ∈ G.support) :
