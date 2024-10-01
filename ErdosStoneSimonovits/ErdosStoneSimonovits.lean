@@ -837,7 +837,7 @@ contain `H` as an isomorphic subgraph tends to `1-1/r` at infinity.
 
 This is a corollary of the *Erdős-Stone-Simonovits theorem*. -/
 theorem tendsto_extremalNumber_div_choose_two_of_chromaticNumber
-    {r : ℕ} (hr_pos : 0 < r)(hχ : H.chromaticNumber = r+1) :
+    {r : ℕ} (hr_pos : 0 < r) (hχ : H.chromaticNumber = r+1) :
     Filter.Tendsto (fun (n : ℕ) ↦ (extremalNumber (Fin n) H / n.choose 2 : ℝ))
       Filter.atTop (𝓝 (1-1/r)) := by
   have h₁ : Filter.Tendsto (fun (n : ℕ) ↦ (1-(n/(n-1)) : ℝ))
@@ -869,7 +869,7 @@ simple graph `H` equals `r+1`. The Turán density of `H` equals `1-1/r`.
 
 This is a corollary of the *Erdős-Stone-Simonovits theorem*. -/
 theorem turanDensity_eq_of_chromaticNumber
-    {r : ℕ} (hr_pos : 0 < r)(hχ : H.chromaticNumber = r+1) :
+    {r : ℕ} (hr_pos : 0 < r) (hχ : H.chromaticNumber = r+1) :
     turanDensity H = 1-1/r :=
   Filter.Tendsto.limUnder_eq
     (tendsto_extremalNumber_div_choose_two_of_chromaticNumber hr_pos hχ)
