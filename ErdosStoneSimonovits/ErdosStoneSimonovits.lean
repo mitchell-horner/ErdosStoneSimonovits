@@ -192,7 +192,7 @@ theorem isIsoSubgraph_completeEquipartiteGraph_of_minDegree
       ∀ i : Fin r, ∃ s : Finset.powersetCard t (A i).val,
         ∀ w ∈ s.val, G.Adj v w
     -- `W.card` is arbitrarily large
-    have h_cardW : ((t'.choose t)^r*t : ℝ) ≤ (W.card : ℝ) := by
+    have h_cardW : ((t'.choose t)^r*t : ℝ) < (W.card : ℝ) := by
       -- double-counting edges between `U` and `Uᶜ`
       have h_between_isBipartite :
           (G.between U (↑U)ᶜ).IsBipartite U (Uᶜ : Finset V) := by
@@ -294,33 +294,34 @@ theorem isIsoSubgraph_completeEquipartiteGraph_of_minDegree
                 exact Finset.card_le_card (Finset.subset_univ _)
               simp_rw [Finset.card_compl Uᶜ, Nat.cast_sub h_cardUcompl_le]
               ring_nf
-      have h_cardW' : ((t'.choose t)^r*t*(t'-t) : ℝ) ≤ (W.card*(t'-t) : ℝ) :=
+      have h_cardW_mul_right :
+          ((t'.choose t)^r*t*(t'-t) : ℝ) < (W.card*(t'-t) : ℝ) :=
         calc ((t'.choose t)^r*t*(t'-t) : ℝ)
-          _ ≤ (Fintype.card V)*(t'*r*ε-t)-r*t'*(t'-t) := by
+          _ < (Fintype.card V)*(t'*r*ε-t)-r*t'*(t'-t) := by
               rw [←add_sub_cancel_right (_^r*t : ℝ) (r*t' : ℝ), sub_mul,
                 ←div_mul_cancel₀ ((_^r*t+r*t')*(t'-t) : ℝ)]
-              apply sub_le_sub_right
-              apply mul_le_mul_of_nonneg_right
-              trans (N' : ℝ)
-              . apply (Nat.le_ceil _).trans
-                rw [Nat.cast_le]
-                exact le_max_right _ _
-              . rw [Nat.cast_le]
-                exact le_of_lt hN'_lt_cardV
-              rw [sub_nonneg]
-              exact le_of_lt ht_lt_t'rε
-              rw [sub_ne_zero]
-              exact ht_lt_t'rε.ne'
+              apply sub_lt_sub_right
+              . apply mul_lt_mul_of_pos_right
+                . apply lt_of_le_of_lt (b := (N' : ℝ))
+                  . apply (Nat.le_ceil _).trans
+                    rw [Nat.cast_le]
+                    exact le_max_right _ _
+                  . rw [Nat.cast_lt]
+                    exact hN'_lt_cardV
+                . rw [sub_pos]
+                  exact ht_lt_t'rε
+              . rw [sub_ne_zero]
+                exact ht_lt_t'rε.ne'
           _ ≤ W.card*(t'-t) := by
               convert sub_left_le_of_le_add
                 (h_le_between.trans h_between_le) using 1
               field_simp [h_cardUcompl]
               ring_nf
-      rwa [mul_le_mul_right] at h_cardW'
+      rwa [mul_lt_mul_right] at h_cardW_mul_right
       rw [sub_pos, Nat.cast_lt]
       exact ht_lt_t'
-    have h_cardW : (t'.choose t)^r*t ≤ W.card := by
-      rwa [←Nat.cast_pow, ←Nat.cast_mul, Nat.cast_le] at h_cardW
+    have h_cardW : (t'.choose t)^r*t < W.card := by
+      rwa [←Nat.cast_pow, ←Nat.cast_mul, Nat.cast_lt] at h_cardW
     -- strong pigeonhole principle
     let F : W → Π i : Fin r, Finset.powersetCard t (A i).val := by
       intro ⟨w, hw⟩ i
@@ -339,7 +340,7 @@ theorem isIsoSubgraph_completeEquipartiteGraph_of_minDegree
       apply Fintype.exists_le_card_fiber_of_mul_le_card
       simp_rw [Fintype.card_pi, Fintype.card_coe, Finset.card_powersetCard,
         h_cardA, Finset.prod_const, Finset.card_univ, Fintype.card_fin]
-      exact h_cardW
+      exact le_of_lt h_cardW
     rw [isIsoSubgraph_completeEquipartiteGraph_succ_iff, Fintype.card_fin t]
     -- identify `completeEquipartiteGraph (Fin r) (Fin t)`
     let A' (i : Fin r) : (Finset.univ : Finset V).powersetCard t := by
