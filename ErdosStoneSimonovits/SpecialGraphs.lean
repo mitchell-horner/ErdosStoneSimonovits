@@ -50,6 +50,39 @@ theorem card_edgeFinset_completeEquipartiteGraph
       Nat.mul_div_cancel' (Nat.even_mul_pred_self (Fintype.card α)).two_dvd]
   ring_nf
 
+/-- The `completeEquipartiteGraph α β` has no edges iff `α` contains at most
+one element or `β` is empty. -/
+theorem isEmpty_completeEquipartiteGraph_edgeSet_iff :
+    IsEmpty (completeEquipartiteGraph α β).edgeSet
+      ↔ Subsingleton α ∨ IsEmpty β := by
+  rw [←not_iff_not, not_or, not_isEmpty_iff, not_subsingleton_iff_nontrivial,
+    not_isEmpty_iff]
+  constructor
+  . intro ⟨e, he⟩
+    rw [show e = s(e.out.1, e.out.2) by simp, mem_edgeSet,
+      completeEquipartiteGraph_adj] at he
+    exact ⟨⟨e.out.1.1, e.out.2.1, he⟩, ⟨e.out.1.2⟩⟩
+  . intro ⟨h_nontrivial, h_nonempty⟩
+    have ⟨a₁, a₂, ha⟩ := h_nontrivial
+    have ⟨b⟩ := h_nonempty
+    let e : (completeEquipartiteGraph α β).edgeSet := by
+      use s((a₁, b), (a₂, b))
+      rw [mem_edgeSet, completeEquipartiteGraph_adj]
+      exact ha
+    exact ⟨e⟩
+
+instance isEmpty_completeEquipartiteGraph_edgeSet_of_subsingleton
+    [Subsingleton α] : IsEmpty (completeEquipartiteGraph α β).edgeSet := by
+  rw [isEmpty_completeEquipartiteGraph_edgeSet_iff]
+  left
+  infer_instance
+
+instance isEmpty_completeEquipartiteGraph_edgeSet_of_isEmpty
+    [IsEmpty β] : IsEmpty (completeEquipartiteGraph α β).edgeSet := by
+  rw [isEmpty_completeEquipartiteGraph_edgeSet_iff]
+  right
+  infer_instance
+
 /-- The construction of a subgraph isomorphism of
 `completeEquipartiteGraph α β`. -/
 theorem isIsoSubgraph_completeEquipartiteGraph_iff
