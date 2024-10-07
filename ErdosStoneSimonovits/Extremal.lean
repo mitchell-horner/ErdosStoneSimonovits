@@ -124,6 +124,24 @@ theorem isIsoSubgraph_of_isEmpty [IsEmpty α] :
   let f : A →g B := ⟨ι, by simp⟩
   exact ⟨f.toSubgraphIso ι.injective⟩
 
+/-- The simple graph with no edges is an isomorphic subgraph of any simple
+graph with sufficently many vertices. -/
+theorem isIsoSubgraph_of_isEmpty_edgeSet [IsEmpty A.edgeSet]
+    [Fintype α] [Fintype β] (h_card_le : Fintype.card α ≤ Fintype.card β) :
+    A.IsIsoSubgraph B := by
+  haveI : Nonempty (α ↪ β) :=
+    Function.Embedding.nonempty_of_card_le h_card_le
+  let ι : α ↪ β := Classical.arbitrary (α ↪ β)
+  let f : A →g B := by
+    use ι
+    intro a₁ a₂ hadj
+    let e : A.edgeSet := by
+      use s(a₁, a₂)
+      rw [mem_edgeSet]
+      exact hadj
+    exact isEmptyElim e
+  exact ⟨f.toSubgraphIso ι.injective⟩
+
 /-- The `⊥ : SimpleGraph α` is an isomorphic subgraph of any simple graph on
 the vertex type `β` if and only if `α` embeds into `β`. -/
 theorem bot_isIsoSubgraph_iff :
