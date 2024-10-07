@@ -27,21 +27,17 @@ theorem isIsoSubgraph_completeEquipartiteGraph_of_minDegree
         → (completeEquipartiteGraph (Fin (r+1)) (Fin t)).IsIsoSubgraph G := by
   by_cases hr_or_t : r = 0 ∨ t = 0
   -- base case
-  . use 0; intro V _ _ _ G _ hδ_ge
-    cases hr_or_t with
+  . cases hr_or_t with
     | inl hr =>
-      absurd calc (G.minDegree : ℝ)
-        _ ≥ (1+ε)*(Fintype.card V) := by
-            convert hδ_ge using 1
-            rw [hr]
-            ring_nf
-        _ > Fintype.card V := by
-            field_simp
-            exact hε_pos
-      push_neg
-      rw [Nat.cast_le]
-      exact minDegree_le_card G
+      use t
+      intro V _ _ h_cardV G _ _
+      rw [hr, zero_add]
+      apply isIsoSubgraph_of_isEmpty_edgeSet
+      simp_rw [Fintype.card_prod, Fintype.card_fin, one_mul]
+      exact le_of_lt h_cardV
     | inr ht =>
+      use 0
+      intros
       rw [ht]
       exact isIsoSubgraph_of_isEmpty
   -- inductive step
@@ -133,17 +129,10 @@ theorem isIsoSubgraph_completeEquipartiteGraph_of_minDegree
     have h_iso_sub :
         (completeEquipartiteGraph (Fin r) (Fin t')).IsIsoSubgraph G := by
       by_cases hr_one : r = 1
-      . rw [hr_one, isIsoSubgraph_completeEquipartiteGraph_iff,
-          Fintype.card_fin t']
-        haveI : Nonempty (Fin 1 → Finset.univ.powersetCard t') := by
-          simp_rw [nonempty_fun, ←Fintype.card_pos_iff, Fintype.card_coe,
-            Finset.card_powersetCard, Finset.card_univ]
-          right; apply Nat.choose_pos
-          exact le_of_lt (lt_of_le_of_lt ht'_le_N' hN'_lt_cardV)
-        use Classical.arbitrary (Fin 1 → Finset.univ.powersetCard t')
-        intro i₁ i₂ hi
-        absurd hi
-        rw [Fin.fin_one_eq_zero i₁, Fin.fin_one_eq_zero i₂]
+      . rw [hr_one]
+        apply isIsoSubgraph_of_isEmpty_edgeSet
+        simp_rw [Fintype.card_prod, Fintype.card_fin, one_mul]
+        exact le_of_lt (lt_of_le_of_lt ht'_le_N' hN'_lt_cardV)
       . have hr_ne : (r : ℝ) ≠ 0 := by
           rw [Nat.cast_ne_zero]
           exact hr_pos.ne'
