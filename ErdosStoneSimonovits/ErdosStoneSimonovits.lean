@@ -1,8 +1,7 @@
 import Mathlib
 
 import ErdosStoneSimonovits.Nat
-import ErdosStoneSimonovits.QuadraticFunctions
-
+import ErdosStoneSimonovits.SpecialFunctions
 import ErdosStoneSimonovits.Degree
 import ErdosStoneSimonovits.Bipartite
 import ErdosStoneSimonovits.SpecialGraphs
