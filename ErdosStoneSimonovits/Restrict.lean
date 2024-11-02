@@ -9,7 +9,7 @@ variable {V α β : Type*} {G : SimpleGraph V} {s t : Set V} {x : V}
 section Restrict
 
 /-- The restriction of a simple graph to the *edges* with vertices in the set
-`s`, deleting all edges incident to vertices outside the set.-/
+`s`, deleting all edges incident to vertices outside the set. -/
 abbrev restrict (s : Set V) (G : SimpleGraph V) :
   SimpleGraph V := (G.induce s).spanningCoe
 
