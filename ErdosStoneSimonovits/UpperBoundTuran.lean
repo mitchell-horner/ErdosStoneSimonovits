@@ -1,7 +1,6 @@
 import Mathlib
 
 import ErdosStoneSimonovits.Nat
-
 import ErdosStoneSimonovits.Bipartite
 import ErdosStoneSimonovits.SpecialGraphs
 
