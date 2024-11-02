@@ -17,7 +17,7 @@ graph of sufficently many vertices `n` having a minimal degree of at least
 `(1-1/r+ε)*n` contains a copy of a complete equipartite graph in `r+1`
 partitions each of size `t` as an isomorphic subgraph.
 
-This is the minimal-degree version of the *Erdős-Stone theorem*. -/
+This is the minimal-degree version of the **Erdős-Stone-Simonovits theorem**. -/
 theorem isIsoSubgraph_completeEquipartiteGraph_of_minDegree
     {ε : ℝ} (hε_pos : 0 < ε) (r t : ℕ) :
     ∃ N, ∀ {V : Type u} [Fintype V] [DecidableEq V], N < Fintype.card V →
@@ -556,7 +556,7 @@ graph of sufficently many vertices `n` having at least `(1-1/r+ε)*n^2/2` edges
 contains a copy of a complete equipartite graph in `r+1` partitions each of
 size `t` as an isomorphic subgraph.
 
-This is the *Erdős-Stone theorem*. -/
+This is the **Erdős-Stone-Simonovits theorem**. -/
 theorem isIsoSubgraph_completeEquipartiteGraph_of_card_edgeFinset
     (r t : ℕ) {ε : ℝ} (hε_pos : 0 < ε) :
     ∃ N, ∀ {V : Type u} [Fintype V] [DecidableEq V], N < Fintype.card V →
@@ -656,7 +656,7 @@ simple graph `H` equals `r+1`, and `ε > 0` is a real number. The extremal
 number `extremalNumber V H` for a sufficently large vertex type `V` is greater
 than `(1-1/r-ε)*(card V)^2/2` and at most `(1-1/r+ε)*(card V)^2/2`.
 
-This is the *Erdős-Stone-Simonovits theorem*. -/
+This is the **Erdős-Stone-Simonovits theorem**. -/
 theorem lt_extremalNumber_le_of_chromaticNumber {ε : ℝ} (hε_pos : 0 < ε)
     {r : ℕ} (hr_pos : 0 < r) (hχ : H.chromaticNumber = r+1) :
     ∃ N, ∀ {V : Type u} [Fintype V] [DecidableEq V], N < Fintype.card V →
@@ -799,7 +799,7 @@ simple graph `H` equals `r+1`. The difference of the extremal number
 `extremalNumber (Fin n) H` and `(1-1/r)*n^2/2` is little-o of `n^2` at
 infinity.
 
-This is a corollary of the *Erdős-Stone-Simonovits theorem*. -/
+This is a corollary of the **Erdős-Stone-Simonovits theorem**. -/
 theorem isLittleO_extremalNumber_of_chromaticNumber
     {r : ℕ} (hr_pos : 0 < r) (hχ : H.chromaticNumber = r+1) :
     (fun (n : ℕ) ↦ (extremalNumber (Fin n) H-(1-1/r)*n^2/2 : ℝ))
@@ -824,7 +824,7 @@ theorem isLittleO_extremalNumber_of_chromaticNumber
 simple graph `H` equals `r+1`. The density of the extremal graphs that do not
 contain `H` as an isomorphic subgraph tends to `1-1/r` at infinity.
 
-This is a corollary of the *Erdős-Stone-Simonovits theorem*. -/
+This is a corollary of the **Erdős-Stone-Simonovits theorem**. -/
 theorem tendsto_extremalNumber_div_choose_two_of_chromaticNumber
     {r : ℕ} (hr_pos : 0 < r) (hχ : H.chromaticNumber = r+1) :
     Filter.Tendsto (fun (n : ℕ) ↦ (extremalNumber (Fin n) H / n.choose 2 : ℝ))
@@ -856,7 +856,7 @@ theorem tendsto_extremalNumber_div_choose_two_of_chromaticNumber
 /-- Suppose `r > 0` is a natural number such that the chromatic number of the
 simple graph `H` equals `r+1`. The Turán density of `H` equals `1-1/r`.
 
-This is a corollary of the *Erdős-Stone-Simonovits theorem*. -/
+This is a corollary of the **Erdős-Stone-Simonovits theorem**. -/
 theorem turanDensity_eq_of_chromaticNumber
     {r : ℕ} (hr_pos : 0 < r) (hχ : H.chromaticNumber = r+1) :
     turanDensity H = 1-1/r :=
@@ -867,7 +867,7 @@ theorem turanDensity_eq_of_chromaticNumber
 simple graph `H` equals `r+1`. The extremal number `extremalNumber (Fin n) H`
 is asymptotically equivalent to `(1-1/r)*(n.choose 2)` at infinity.
 
-This is a corollary of the *Erdős-Stone-Simonovits theorem*. -/
+This is a corollary of the **Erdős-Stone-Simonovits theorem**. -/
 theorem isEquivalent_extremalNumber_of_chromaticNumber
     {r : ℕ} (hr : 1 < r) (hχ : H.chromaticNumber = r+1) :
     (fun (n : ℕ) ↦ (extremalNumber (Fin n) H : ℝ))
