@@ -247,22 +247,20 @@ theorem isIsoSubgraph_completeEquipartiteGraph_of_colorable [Fintype V]
   have ι (c) := Classical.arbitrary (C.colorClass c ↪ β)
   use ⟨fun v ↦ (C v, ι (C v) ⟨v, C.mem_colorClass v⟩), fun h ↦ C.valid h⟩
   intro v w hvw
-  obtain ⟨hC_eq : C v = C w,
-      hιCvv_eq_ιCww : ι (C v) ⟨v, _⟩ = ι (C w) ⟨w, _⟩⟩ := by
+  obtain ⟨hC_eq : C v = C w, hι_eq : ι (C v) ⟨v, _⟩ = ι (C w) ⟨w, _⟩⟩ := by
     rwa [Prod.mk.injEq] at hvw
-  have hv_mem_Cw : v ∈ C.colorClass (C w) := by
+  have hv_mem : v ∈ C.colorClass (C w) := by
     rw [Coloring.colorClass, Set.mem_setOf]
     exact hC_eq
-  have hιCvv_eq_ιCwv :
-      ι (C v) ⟨v, C.mem_colorClass v⟩ = ι (C w) ⟨v, hv_mem_Cw⟩ := by
+  have hι_eq' : ι (C v) ⟨v, C.mem_colorClass v⟩ = ι (C w) ⟨v, hv_mem⟩ := by
     apply congr_heq
     . rw [hC_eq]
     . rw [Subtype.heq_iff_coe_eq]
       intro _
       rw [hC_eq]
-  rw [hιCvv_eq_ιCwv] at hιCvv_eq_ιCww
+  rw [hι_eq'] at hι_eq
   rw [←Subtype.mk.injEq]
-  exact (ι (C w)).injective hιCvv_eq_ιCww
+  exact (ι (C w)).injective hι_eq
 
 variable [Nonempty V] [Fintype V] [DecidableEq β]
 
