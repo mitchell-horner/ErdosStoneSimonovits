@@ -23,7 +23,7 @@ theorem exists_extremal_graph_cliqueFree [Fintype β] {n : ℕ} (hn : n ≥ 2) :
 /-- A `r+1`-clique free simple graph on the vertex type `V` has at most
 `(1-1/r)*(Fintype.card V)^2/2` edges.
 
-This is the upper-bound of *Turán's theorem*. -/
+This is the upper-bound of **Turán's theorem**. -/
 theorem card_edgeFinset_le_of_cliqueFree
     {V : Type*} [Fintype V] {G : SimpleGraph V} [DecidableRel G.Adj]
     {r : ℕ} (hr : r ≥ 1) (h : G.CliqueFree (r+1)) :
