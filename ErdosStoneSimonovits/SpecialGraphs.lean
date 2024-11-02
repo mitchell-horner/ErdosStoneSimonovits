@@ -312,3 +312,82 @@ theorem lt_extremalNumber_of_colorable
   exact h_le
 
 end CompleteEquipartiteGraph
+
+section CompleteBipartiteGraph
+
+/-- The construction of a subgraph isomorphism of
+`completeBipartiteGraph α β`. -/
+theorem isIsoSubgraph_completeBipartiteGraph_iff
+    [Fintype α] [Fintype β] [Fintype V] {G : SimpleGraph V}:
+    (completeBipartiteGraph α β).IsIsoSubgraph G
+      ↔ ∃ (A : Finset.univ.powersetCard (Fintype.card α))
+        (B : Finset.univ.powersetCard (Fintype.card β)),
+          ∀ v₁ ∈ A.val, ∀ v₂ ∈ B.val, G.Adj v₁ v₂ := by
+  constructor
+  . intro ⟨f⟩
+    let A := Finset.univ.map ⟨f ∘ Sum.inl, f.injective.comp Sum.inl_injective⟩
+    have hA : A ∈ Finset.univ.powersetCard (Fintype.card α) := by
+      rw [Finset.mem_powersetCard_univ, Finset.card_map, Finset.card_univ]
+    use ⟨A, hA⟩
+    let B := Finset.univ.map ⟨f ∘ Sum.inr, f.injective.comp Sum.inr_injective⟩
+    have hB : B ∈ Finset.univ.powersetCard (Fintype.card β) := by
+      rw [Finset.mem_powersetCard_univ, Finset.card_map, Finset.card_univ]
+    use ⟨B, hB⟩
+    intro v₁ hv₁ v₂ hv₂
+    rw [Finset.mem_map] at hv₁ hv₂
+    have ⟨a, _, ha⟩ := hv₁
+    have ⟨b, _, hb⟩ := hv₂
+    rw [←ha, ←hb]
+    apply f.toHom.map_adj
+    simp
+  . intro ⟨⟨A, hA⟩, ⟨B, hB⟩, h⟩
+    rw [Finset.mem_powersetCard_univ] at hA hB
+    haveI : Nonempty (α ↪ A) := by
+      apply Function.Embedding.nonempty_of_card_le
+      rw [Fintype.card_coe]
+      exact ge_of_eq hA
+    let fa : α ↪ A := Classical.arbitrary (α ↪ A)
+    haveI : Nonempty (β ↪ B) := by
+      apply Function.Embedding.nonempty_of_card_le
+      rw [Fintype.card_coe]
+      exact ge_of_eq hB
+    let fb : β ↪ B := Classical.arbitrary (β ↪ B)
+    let f : α ⊕ β ↪ V := by
+      use Sum.elim (Subtype.val ∘ fa) (Subtype.val ∘ fb)
+      intro ab₁ ab₂
+      match ab₁, ab₂ with
+      | Sum.inl a₁, Sum.inl a₂ =>
+        simp [←Subtype.ext_iff, fa.injective]
+      | Sum.inr b₁, Sum.inl a₂ =>
+        suffices h : (fb b₁ : V) ≠ (fa a₂ : V) by
+          simp [h]
+        apply ne_of_adj
+        apply adj_symm
+        exact h (fa a₂) (fa a₂).prop (fb b₁) (fb b₁).prop
+      | Sum.inl a₁, Sum.inr b₂ =>
+        suffices h : (fa a₁ : V) ≠ (fb b₂ : V) by
+          simp [h]
+        apply ne_of_adj
+        exact h (fa a₁) (fa a₁).prop (fb b₂) (fb b₂).prop
+      | Sum.inr b₁, Sum.inr b₂ =>
+        simp [←Subtype.ext_iff, fa.injective]
+    use ⟨f.toFun, ?_⟩
+    . exact f.injective
+    . intro ab₁ ab₂ hab
+      rw [completeBipartiteGraph_adj] at hab
+      cases hab with
+      | inl hab =>
+        conv_lhs => rw [←Sum.inl_getLeft ab₁ hab.1]
+        conv_rhs => rw [←Sum.inr_getRight ab₂ hab.2]
+        simp_rw [Sum.elim_inl, Sum.elim_inr]
+        apply h (fa _) _ (fb _) _
+        all_goals simp_rw [Finset.coe_mem]
+      | inr hab =>
+        conv_lhs => rw [←Sum.inr_getRight ab₁ hab.1]
+        conv_rhs => rw [←Sum.inl_getLeft ab₂ hab.2]
+        simp_rw [Sum.elim_inl, Sum.elim_inr]
+        apply adj_symm
+        apply h (fa _) _ (fb _) _
+        all_goals simp_rw [Finset.coe_mem]
+
+end CompleteBipartiteGraph
