@@ -331,23 +331,29 @@ theorem exists_extremal_graph_not_isIsoSubgraph [Fintype β]
 
 /-- The extremal graphs on vertex type `β` that do not contain `A` as an
 isomorphic subgraph have `extremalNumber β A` number of edges. -/
-theorem card_edgeFinset_eq_extremalNumber [Fintype β] {E : SimpleGraph β}
-    (h : ¬A.IsIsoSubgraph E)
-    (h_extremal : ∀ B : SimpleGraph β,
-        ¬A.IsIsoSubgraph B → B.edgeFinset.card ≤ E.edgeFinset.card) :
-    E.edgeFinset.card = extremalNumber β A := by
-  by_contra! nh
-  have h_lt : E.edgeFinset.card < extremalNumber β A := by
-    rw [ne_iff_lt_or_gt, or_iff_left] at nh
-    exact nh
-    push_neg
-    apply le_extremalNumber h
-  have h_le : extremalNumber β A ≤ E.edgeFinset.card := by
-    rw [extremalNumber_le_iff]
-    intro B h
-    exact h_extremal B h
-  absurd lt_of_le_of_lt h_le h_lt
-  rw [lt_self_iff_false, not_false_eq_true]
-  trivial
+theorem card_edgeFinset_eq_extremalNumber_iff
+    [Fintype β] {E : SimpleGraph β} [DecidableRel E.Adj]
+    (h_free : ¬A.IsIsoSubgraph E) :
+    E.edgeFinset.card = extremalNumber β A ↔
+      ∀ (B : SimpleGraph β) [DecidableRel B.Adj],
+        ¬A.IsIsoSubgraph B → B.edgeFinset.card ≤ E.edgeFinset.card := by
+  constructor
+  . intro h_eq
+    rw [h_eq]
+    intro B
+    exact le_extremalNumber
+  . intro h_extremal
+    by_contra! nh
+    have h_lt : E.edgeFinset.card < extremalNumber β A := by
+      rw [ne_iff_lt_or_gt, or_iff_left] at nh
+      exact nh
+      push_neg
+      apply le_extremalNumber h_free
+    have h_le : extremalNumber β A ≤ E.edgeFinset.card := by
+      rw [extremalNumber_le_iff]
+      exact h_extremal
+    absurd lt_of_le_of_lt h_le h_lt
+    rw [lt_self_iff_false, not_false_eq_true]
+    trivial
 
 end ExtremalNumber
