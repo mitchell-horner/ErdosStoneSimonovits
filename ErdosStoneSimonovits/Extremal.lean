@@ -142,11 +142,18 @@ theorem isIsoSubgraph_of_isEmpty_edgeSet [IsEmpty A.edgeSet]
     exact isEmptyElim e
   exact ⟨f.toSubgraphIso ι.injective⟩
 
-/-- The `⊥ : SimpleGraph α` is an isomorphic subgraph of any simple graph on
+/-- `⊥ : SimpleGraph α` is an isomorphic subgraph of any simple graph on
 the vertex type `β` if and only if `α` embeds into `β`. -/
 theorem bot_isIsoSubgraph_iff :
     (⊥ : SimpleGraph α).IsIsoSubgraph B ↔ Nonempty (α ↪ β) :=
   ⟨fun ⟨f⟩ ↦ ⟨f.asEmbedding⟩, fun ⟨f⟩ ↦ ⟨⟨f, by simp⟩, f.injective⟩⟩
+
+/-- If `A ≃g B`, then `A` is an isomorphic subgraph of `C` if and only if `B`
+is an isomorphic subgraph of `C`. -/
+lemma isIsoSubgraph_iff_of_iso (f : A ≃g B) :
+    A.IsIsoSubgraph C ↔ B.IsIsoSubgraph C :=
+  ⟨IsIsoSubgraph.trans ⟨f.symm.toSubgraphIso⟩,
+    IsIsoSubgraph.trans ⟨f.toSubgraphIso⟩⟩
 
 section ExtremalNumber
 
