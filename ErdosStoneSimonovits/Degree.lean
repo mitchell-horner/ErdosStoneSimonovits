@@ -46,12 +46,11 @@ twice the number of edges of a simple graph. -/
 theorem card_mul_minDegree_le_twice_card_edgeFinset
      (G : SimpleGraph V) [DecidableRel G.Adj] :
     (Fintype.card V)*G.minDegree ≤ 2*G.edgeFinset.card := by
-  rw [←sum_degrees_eq_twice_card_edges]
-  trans ∑ _ : V, G.minDegree
-  . rw [Finset.sum_const, smul_eq_mul, Finset.card_univ]
-  . apply Finset.sum_le_sum
-    intro i _
-    exact minDegree_le_degree G i
+  rw [←sum_degrees_eq_twice_card_edges, ←smul_eq_mul, ←Finset.card_univ,
+    ←Finset.sum_const]
+  apply Finset.sum_le_sum
+  intro i _
+  exact minDegree_le_degree G i
 
 /-- The minimal degree is less than the number of vertices in a simple graph
 with a nonempty vertex type. -/
