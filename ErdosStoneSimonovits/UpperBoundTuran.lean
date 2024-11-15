@@ -154,23 +154,6 @@ decreasing_by
   rw [h_card_compl]
   exact Nat.sub_lt_self hr (le_of_lt hr_lt)
 
-/-- A simple graph does not contain `completeGraph (Fin n)` as an isomorphic
-subgraph if and only if it has no `n`-cliques. -/
-theorem not_isIsoSubgraph_completeGraph_iff_cliqueFree {n : ℕ} :
-    ¬(completeGraph (Fin n)).IsIsoSubgraph G ↔ G.CliqueFree n := by
-  rw [←not_iff_not, not_not, cliqueFree_iff, not_isEmpty_iff]
-  refine ⟨?_, fun ⟨f⟩ ↦ ⟨f, f.injective⟩⟩
-  intro ⟨f, hf⟩
-  use ⟨f, hf⟩
-  intro v w
-  rw [top_adj]
-  refine ⟨?_, Hom.map_adj f⟩
-  contrapose
-  push_neg
-  intro h
-  rw [h]
-  exact G.loopless (f w)
-
 /-- The extremal numbers of the `r+1`-complete graphs on the type `V` are at
 most `(1-1/r)*(Fintype.card V)^2/2`.
 
