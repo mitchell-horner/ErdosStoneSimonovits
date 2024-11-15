@@ -244,20 +244,27 @@ theorem extremalNumber_le_extremalNumber_of_isIsoSubgraph [Fintype β]
   intro h_lt
   exact h.trans (extremalNumber_lt h_lt)
 
-/-- The extremal numbers of `A` on the isomorphic types `β ≃ V` are equal. -/
-theorem extremalNumber_eq_of_iso [Fintype β] [Fintype V] (f : β ≃ V) :
-    extremalNumber β A = extremalNumber V A := by
+/-- The extremal numbers of isomorphic graphs `A ≃g B` on the isomorphic
+types `β ≃ V` are equal. -/
+theorem extremalNumber_eq_of_iso
+    [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
+    (f : A ≃g B) (g : V ≃ W) : extremalNumber V A = extremalNumber W B := by
   rw [eq_iff_le_not_lt]
   push_neg
   constructor
   all_goals
     rw [extremalNumber_le_iff]
-    intro B h
-  let F := Iso.map f B; swap; let F := Iso.map f.symm B
+    intro H _ h
+  let F := Iso.map g H
+  let G := f.toSubgraphIso
+  swap
+  let F := Iso.map g.symm H
+  let G := f.symm.toSubgraphIso
   all_goals
     rw [Iso.card_edgeFinset_eq F]
     apply le_extremalNumber
     contrapose! h
+    apply IsIsoSubgraph.trans ⟨G⟩
     exact h.trans ⟨F.symm.toSubgraphIso⟩
 
 /-- The extremal numbers of `⊥` equal zero. -/

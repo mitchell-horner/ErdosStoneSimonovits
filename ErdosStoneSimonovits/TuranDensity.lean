@@ -141,7 +141,8 @@ where
                 Set.toFinset_singleton, Finset.card_compl,
                 Finset.card_singleton, Fintype.card_fin]
               exact Nat.pred_succ _
-            rw [←extremalNumber_eq_of_iso (Fintype.equivFinOfCardEq h_cardEq)]
+            rw [←extremalNumber_eq_of_iso
+              Iso.refl (Fintype.equivFinOfCardEq h_cardEq)]
             -- `n`-vertex induced subgraphs of `G` do not contain `H`
             apply le_extremalNumber
             contrapose! h
