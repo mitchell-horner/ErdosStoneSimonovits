@@ -13,7 +13,7 @@ open Classical in
 provided that `n ≥ 2`. -/
 theorem exists_extremal_graph_cliqueFree [Fintype β] {n : ℕ} (hn : n ≥ 2) :
     ∃ E : SimpleGraph β, E.CliqueFree n ∧
-      ∀ B : SimpleGraph β,
+      ∀ (B : SimpleGraph β) [DecidableRel B.Adj],
         B.CliqueFree n → B.edgeFinset.card ≤ E.edgeFinset.card := by
   let p := ((CliqueFree · n) : SimpleGraph β → Prop)
   let hp : ∃ B, p B := ⟨⊥, cliqueFree_bot hn⟩
@@ -24,7 +24,7 @@ theorem exists_extremal_graph_cliqueFree [Fintype β] {n : ℕ} (hn : n ≥ 2) :
 
 This is the upper-bound of **Turán's theorem**. -/
 theorem card_edgeFinset_le_of_cliqueFree
-    {V : Type*} [Fintype V] {G : SimpleGraph V} [DecidableRel G.Adj]
+    {V : Type*} [DecidableEq V] [Fintype V] {G : SimpleGraph V} [DecidableRel G.Adj]
     {r : ℕ} (hr : r ≥ 1) (h : G.CliqueFree (r+1)) :
     G.edgeFinset.card ≤ ((1-1/r)*(Fintype.card V)^2/2 : ℝ) := by
   by_cases h_le_r : Fintype.card V ≤ r
@@ -59,7 +59,7 @@ theorem card_edgeFinset_le_of_cliqueFree
     -- there exists a `r+1`-clique-free extremal graph
     have ⟨M, h_cliqueFree, h_extremal⟩ :
       ∃ M : SimpleGraph V, M.CliqueFree (r+1) ∧
-        ∀ G : SimpleGraph V,
+        ∀ (G : SimpleGraph V) [DecidableRel G.Adj],
           G.CliqueFree (r+1) → G.edgeFinset.card ≤ M.edgeFinset.card := by
       apply exists_extremal_graph_cliqueFree
       field_simp [Nat.succ_le_succ_iff, hr]
@@ -175,7 +175,8 @@ theorem not_isIsoSubgraph_completeGraph_iff_cliqueFree {n : ℕ} :
 most `(1-1/r)*(Fintype.card V)^2/2`.
 
 See `card_edgeFinset_le_of_cliqueFree`. -/
-theorem extremalNumber_completeGraph_le (V : Type*) [Fintype V] (hr : 1 ≤ r) :
+theorem extremalNumber_completeGraph_le
+    (V : Type*) [DecidableEq V] [Fintype V] (hr : 1 ≤ r) :
     extremalNumber V (completeGraph (Fin (r+1)))
       ≤ ((1-1/r)*(Fintype.card V)^2/2 : ℝ) := by
   have h_nonneg : 0 ≤ ((1-1/r)*(Fintype.card V)^2/2 : ℝ) := by
@@ -184,6 +185,5 @@ theorem extremalNumber_completeGraph_le (V : Type*) [Fintype V] (hr : 1 ≤ r) :
     exact Nat.one_sub_one_div_cast_nonneg r
   simp_rw [extremalNumber_le_iff_of_nonneg _ _ h_nonneg,
     not_isIsoSubgraph_completeGraph_iff_cliqueFree]
-  intro G h_cliqueFree
-  classical
+  intro G _ h_cliqueFree
   exact card_edgeFinset_le_of_cliqueFree hr h_cliqueFree

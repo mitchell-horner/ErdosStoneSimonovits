@@ -9,7 +9,7 @@ variable {V : Type*} {G H : SimpleGraph V}
 
 section TuranDensity
 
-open Classical Topology Asymptotics
+open Topology Asymptotics
 
 /-- The *Turán density* of a simple graph `H` is the limit of the maximum
 density of simple graphs that do not contain a copy of `H` as an isomorphic
@@ -24,11 +24,13 @@ theorem _root_.Sym2.coe_out_eq (e : Sym2 V) :
     (e : Set V) = {e.out.1, e.out.2} := by
   ext; simp [←Sym2.mem_iff]
 
-noncomputable instance (e : Sym2 V) : Fintype (e : Set V) := by
+noncomputable instance [DecidableEq V] (e : Sym2 V) :
+    Fintype (e : Set V) := by
   rw [Sym2.coe_out_eq]
   infer_instance
 
-lemma _root_.Sym2.card_coe_of_isDiag (e : Sym2 V) (h : e.IsDiag) :
+lemma _root_.Sym2.card_coe_of_isDiag
+    [DecidableEq V] (e : Sym2 V) (h : e.IsDiag) :
     Fintype.card (e : Set V) = 1 := by
   rw [show e = s(e.out.1, e.out.2) by simp, Sym2.mk_isDiag_iff] at h
   have h_coe_eq : (e : Set V) = {e.out.1} := by
@@ -39,7 +41,8 @@ lemma _root_.Sym2.card_coe_of_isDiag (e : Sym2 V) (h : e.IsDiag) :
     exact ⟨Equiv.refl e⟩
   rw [h_cardEq, Fintype.card_ofSubsingleton]
 
-lemma _root_.Sym2.card_coe_of_not_isDiag (e : Sym2 V) (h : ¬e.IsDiag) :
+lemma _root_.Sym2.card_coe_of_not_isDiag
+    [DecidableEq V] (e : Sym2 V) (h : ¬e.IsDiag) :
     Fintype.card (e : Set V) = 2 := by
   rw [show e = s(e.out.1, e.out.2) by simp, Sym2.mk_isDiag_iff] at h
   have h_not_mem_singleton : e.out.1 ∉ ({e.out.2} : Set V) := by
@@ -53,12 +56,13 @@ lemma _root_.Sym2.card_coe_of_not_isDiag (e : Sym2 V) (h : ¬e.IsDiag) :
     Fintype.card_ofSubsingleton]
 
 /-- The coercion of an edge to a set contains two vertices. -/
-theorem card_mem_edgeSet (e : G.edgeSet) :
+theorem card_mem_edgeSet [DecidableEq V] (e : G.edgeSet) :
     Fintype.card (e : Set V) = 2 := by
   convert Sym2.card_coe_of_not_isDiag e (G.not_isDiag_of_mem_edgeSet e.prop)
 
 /-- The coercion of an edge to a set contains two vertices. -/
-theorem card_mem_edgeFinset [Fintype G.edgeSet] (e : G.edgeFinset) :
+theorem card_mem_edgeFinset
+    [DecidableEq V] [Fintype G.edgeSet] (e : G.edgeFinset) :
     Fintype.card (e : Set V) = 2 := by
   let e' : G.edgeSet := ⟨e, mem_edgeFinset.mp e.prop⟩
   rw [show e.val = e'.val by rfl]
@@ -109,16 +113,15 @@ where
       mul_nonneg (extremalNumber_div_choose_two_nonneg n) (Nat.cast_nonneg _)
     rw [div_le_iff₀ h_succ_choose_two_pos,
       extremalNumber_le_iff_of_nonneg _ _ h_nonneg]
-    classical
-    intro G h
+    intro G _ h
     rw [mul_comm, ←mul_div_assoc, le_div_iff₀' h_choose_two_pos]
     -- double-counting edges and vertices
     let s := (G.edgeFinset ×ˢ Finset.univ).filter fun (e, v) ↦ v ∉ e
     -- counting over edges
     have hs₁ : s.card = G.edgeFinset.card * (n-1) := by
-      simp_rw [Finset.card_filter _ _, Finset.sum_product, ←Finset.card_filter,
-        ←SetLike.mem_coe, ←Set.mem_toFinset, Finset.filter_not,
-        Finset.filter_mem_eq_inter]
+      classical simp_rw [Finset.card_filter _ _, Finset.sum_product,
+        ←Finset.card_filter, ←SetLike.mem_coe, ←Set.mem_toFinset,
+        Finset.filter_not, Finset.filter_mem_eq_inter]
       conv_lhs =>
         rw [←Finset.sum_attach]
         rhs; intro e

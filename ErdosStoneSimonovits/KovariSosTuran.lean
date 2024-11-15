@@ -229,7 +229,6 @@ theorem extremalNumber_completeBipartiteGraph_le
       . exact Real.rpow_nonneg (Nat.cast_nonneg _) _
     . exact mul_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
   simp_rw [extremalNumber_le_iff_of_nonneg _ _ h_nonneg]
-  intro G nh_isosub
-  classical
-    exact card_edgeFinset_le_of_completeBipartiteGraph_free
-      α β h_card_le nh_isosub
+  intro G _ nh_isosub
+  exact card_edgeFinset_le_of_completeBipartiteGraph_free
+    α β h_card_le nh_isosub
