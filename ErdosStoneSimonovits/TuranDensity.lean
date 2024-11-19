@@ -149,6 +149,7 @@ where
             -- `n`-vertex induced subgraphs of `G` do not contain `H`
             apply le_extremalNumber
             contrapose! h
+            rw [not_not] at h ⊢
             exact h.trans ⟨SubgraphIso.induce G _⟩
         _ = extremalNumber (Fin n) H * (n+1) := by
             rw [Finset.sum_const, smul_eq_mul, Finset.card_univ,

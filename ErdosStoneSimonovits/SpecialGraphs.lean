@@ -210,17 +210,18 @@ lemma Colorable.mono_of_isIsoSubgraph {n : ℕ} (h : A.IsIsoSubgraph B) :
 
 /-- If `A` is not `n`-colorable and `G` is `n`-colorable, `G` does not contain
 `A` as an isomorphic subgraph. -/
-lemma not_isIsoSubgraph_of_colorable (nh_col : ¬A.Colorable n)
-    (h_col : G.Colorable n) : ¬A.IsIsoSubgraph G := by
+lemma free_of_colorable (nh_col : ¬A.Colorable n)
+    (h_col : G.Colorable n) : A.Free G := by
   contrapose! nh_col
+  rw [not_not] at nh_col
   exact Colorable.mono_of_isIsoSubgraph nh_col h_col
 
 /-- If `G` is not `n`-colorable then `completeEquipartiteGraph (Fin n) β`
 cannot contain `G` as an isomorphic subgraph. -/
-theorem not_isIsoSubgraph_completeEquipartiteGraph_of_not_colorable
+theorem completeEquipartiteGraph_free_of_not_colorable
     {n : ℕ} (h : ¬G.Colorable n) :
-    ¬G.IsIsoSubgraph (completeEquipartiteGraph (Fin n) β) := by
-  apply not_isIsoSubgraph_of_colorable h
+    G.Free (completeEquipartiteGraph (Fin n) β) := by
+  apply free_of_colorable h
   conv_rhs =>
     rw [←Fintype.card_fin n]
   exact completeEquipartiteGraph_colorable
@@ -305,7 +306,7 @@ theorem lt_extremalNumber_of_colorable
   have h_le : B.edgeFinset.card ≤ extremalNumber β A := by
     apply le_extremalNumber
     have h_col' := Colorable.map f h_col
-    exact not_isIsoSubgraph_of_colorable nh_col h_col'
+    exact free_of_colorable nh_col h_col'
   rw [←card_edgeFinset_map G f] at h
   apply lt_of_lt_of_le h
   rw [Nat.cast_le]
@@ -396,8 +397,8 @@ section CompleteGraph
 
 /-- A simple graph does not contain `completeGraph (Fin n)` as an isomorphic
 subgraph if and only if it has no `n`-cliques. -/
-theorem not_isIsoSubgraph_completeGraph_iff_cliqueFree {n : ℕ} :
-    ¬(completeGraph (Fin n)).IsIsoSubgraph G ↔ G.CliqueFree n := by
+theorem completeGraph_free_iff_cliqueFree {n : ℕ} :
+    (completeGraph (Fin n)).Free G ↔ G.CliqueFree n := by
   rw [←not_iff_not, not_not, cliqueFree_iff, not_isEmpty_iff]
   refine ⟨?_, fun ⟨f⟩ ↦ ⟨f, f.injective⟩⟩
   intro ⟨f, hf⟩

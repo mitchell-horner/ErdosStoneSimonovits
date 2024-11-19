@@ -19,7 +19,7 @@ This is the **Kővári–Sós–Turán theorem**. -/
 theorem card_edgeFinset_le_of_completeBipartiteGraph_free
     [Nonempty α] (h_card_le : card α ≤ card β)
     {G : SimpleGraph V} [DecidableRel G.Adj]
-    (h : ¬(completeBipartiteGraph α β).IsIsoSubgraph G) :
+    (h : (completeBipartiteGraph α β).Free G) :
     G.edgeFinset.card
       ≤ (card β-1)^(1/(card α : ℝ))*(card V)^(2-1/(card α : ℝ))/2
         + (card α : ℝ)*(card V : ℝ)/2 := by

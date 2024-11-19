@@ -144,7 +144,7 @@ theorem isIsoSubgraph_of_isEmpty_edgeSet [IsEmpty A.edgeSet]
 
 /-- `⊥ : SimpleGraph α` is an isomorphic subgraph of any simple graph on
 the vertex type `β` if and only if `α` embeds into `β`. -/
-theorem bot_isIsoSubgraph_iff :
+theorem bot_isIsoSubgraph_iff (B : SimpleGraph β) :
     (⊥ : SimpleGraph α).IsIsoSubgraph B ↔ Nonempty (α ↪ β) :=
   ⟨fun ⟨f⟩ ↦ ⟨f.asEmbedding⟩, fun ⟨f⟩ ↦ ⟨⟨f, by simp⟩, f.injective⟩⟩
 
@@ -182,20 +182,20 @@ Note that if `A` is an isomorphic subgraph of any simple graph on the vertex
 type `β` then this is `0`. -/
 noncomputable def extremalNumber
     (β : Type*) [Fintype β] (A : SimpleGraph α) : ℕ :=
-  Finset.sup (Finset.univ.filter (¬A.IsIsoSubgraph ·) : Finset (SimpleGraph β))
+  Finset.sup (Finset.univ.filter A.Free : Finset (SimpleGraph β))
     (·.edgeFinset.card : SimpleGraph β → ℕ)
 
 open Classical in
 theorem extremalNumber_eq_sup
     (β : Type*) [Fintype β] (A : SimpleGraph α) : extremalNumber β A =
-  Finset.sup (Finset.univ.filter (¬A.IsIsoSubgraph ·) : Finset (SimpleGraph β))
+  Finset.sup (Finset.univ.filter A.Free : Finset (SimpleGraph β))
     (·.edgeFinset.card : SimpleGraph β → ℕ) := by rfl
 
 open Classical in
 theorem le_extremalNumber [Fintype β] [DecidableRel B.Adj]
-    (h : ¬A.IsIsoSubgraph B) :
+    (h : A.Free B) :
     B.edgeFinset.card ≤ extremalNumber β A := by
-  let s := (Finset.univ.filter (¬A.IsIsoSubgraph ·) : Finset (SimpleGraph β))
+  let s := (Finset.univ.filter A.Free : Finset (SimpleGraph β))
   let f := (·.edgeFinset.card : SimpleGraph β → ℕ)
   suffices h : f B ≤ s.sup f by convert h
   apply Finset.le_sup
@@ -211,7 +211,7 @@ theorem extremalNumber_lt [Fintype β] [DecidableRel B.Adj]
 theorem extremalNumber_le_iff
     (β : Type*) [Fintype β] (A : SimpleGraph α) (x : ℕ) :
     extremalNumber β A ≤ x ↔ ∀ (B : SimpleGraph β) [DecidableRel B.Adj],
-      ¬A.IsIsoSubgraph B → B.edgeFinset.card ≤ x := by
+      A.Free B → B.edgeFinset.card ≤ x := by
   simp_rw [extremalNumber_eq_sup, Finset.sup_le_iff, Finset.mem_filter,
     Finset.mem_univ, true_and]
   exact ⟨fun h B _ hB ↦ by convert h B hB, fun h B hB ↦ by convert h B hB⟩
@@ -220,7 +220,7 @@ open Classical in
 theorem lt_extremalNumber_iff
     (β : Type*) [Fintype β] (A : SimpleGraph α) (x : ℕ) :
     x < extremalNumber β A ↔ ∃ B : SimpleGraph β,
-      ¬A.IsIsoSubgraph B ∧ x < B.edgeFinset.card := by
+      A.Free B ∧ x < B.edgeFinset.card := by
   rw [extremalNumber_eq_sup]; simp
 
 variable {R : Type*} [LinearOrderedSemiring R] [FloorSemiring R] {x : R}
@@ -228,7 +228,7 @@ variable {R : Type*} [LinearOrderedSemiring R] [FloorSemiring R] {x : R}
 theorem extremalNumber_le_iff_of_nonneg
     (β : Type*) [Fintype β] (A : SimpleGraph α) (hx_nonneg : 0 ≤ x) :
     ↑(extremalNumber β A) ≤ x ↔ ∀ (B : SimpleGraph β) [DecidableRel B.Adj],
-      ¬A.IsIsoSubgraph B → ↑B.edgeFinset.card ≤ x := by
+      A.Free B → ↑B.edgeFinset.card ≤ x := by
   simp_rw [←Nat.le_floor_iff hx_nonneg]
   exact extremalNumber_le_iff β A ⌊x⌋₊
 
@@ -236,7 +236,7 @@ open Classical in
 theorem lt_extremalNumber_iff_of_nonneg
     (β : Type*) [Fintype β] (A : SimpleGraph α) (hx_nonneg : 0 ≤ x) :
     x < ↑(extremalNumber β A) ↔ ∃ B : SimpleGraph β,
-      ¬A.IsIsoSubgraph B ∧ x < ↑B.edgeFinset.card := by
+      A.Free B ∧ x < ↑B.edgeFinset.card := by
   simp_rw [←Nat.floor_lt hx_nonneg]
   exact lt_extremalNumber_iff β A ⌊x⌋₊
 
@@ -258,6 +258,7 @@ theorem extremalNumber_le_extremalNumber_of_isIsoSubgraph [Fintype β]
   contrapose
   push_neg
   intro h_lt
+  rw [not_not]
   exact h.trans (extremalNumber_lt h_lt)
 
 /-- The extremal numbers of isomorphic graphs `A ≃g B` on the isomorphic
@@ -280,16 +281,17 @@ theorem extremalNumber_eq_of_iso
     rw [Iso.card_edgeFinset_eq F]
     apply le_extremalNumber
     contrapose! h
+    rw [not_not] at h ⊢
     apply IsIsoSubgraph.trans ⟨G⟩
     exact h.trans ⟨F.symm.toSubgraphIso⟩
 
 /-- The extremal numbers of `⊥` equal zero. -/
 theorem extremalNumber_bot [DecidableEq β] [Fintype β] (h : Nonempty (V ↪ β)) :
     extremalNumber β (⊥ : SimpleGraph V) = 0 := by
-  classical
-  simp_rw [extremalNumber_eq_sup, bot_isIsoSubgraph_iff, h, not_true,
-    Finset.filter_False, Finset.sup_empty]
-  exact bot_eq_zero
+  rw [←Nat.le_zero, extremalNumber_le_iff]
+  intro B _ hB
+  absurd hB
+  rwa [←bot_isIsoSubgraph_iff B] at h
 
 /-- The extremal numbers of `Fintype.card β ≤ 1` equal zero. -/
 theorem extremalNumber_of_card_le_one
@@ -299,7 +301,7 @@ theorem extremalNumber_of_card_le_one
     rwa [Fintype.card_le_one_iff_subsingleton] at h
   simp_rw [extremalNumber_eq_sup, Finset.univ_unique,
     Finset.filter_singleton, instInhabited_default]
-  by_cases h : ¬A.IsIsoSubgraph (⊥ : SimpleGraph β)
+  by_cases h : A.Free (⊥ : SimpleGraph β)
   all_goals simp [h, -not_nonempty_iff, -nonempty_subtype, -Set.toFinset_card]
 
 open Classical in
@@ -326,8 +328,8 @@ theorem exists_extremal_graph [Fintype V]
   convert h
   simp
 
-lemma not_isIsoSubgraph_bot (h : G.edgeSet.Nonempty) :
-    ¬G.IsIsoSubgraph (⊥ : SimpleGraph β) := by
+lemma free_bot (h : G.edgeSet.Nonempty) :
+    G.Free (⊥ : SimpleGraph β) := by
   intro ⟨f, _⟩
   rw [←ne_self_iff_false, ←edgeSet_nonempty]
   let ⟨e, he⟩ := h
@@ -336,23 +338,23 @@ lemma not_isIsoSubgraph_bot (h : G.edgeSet.Nonempty) :
 open Classical in
 /-- There exist extremal graphs on vertex type `β` that do not contain `A` as
 an isomorphic subgraph provided that `A` has at least one edge. -/
-theorem exists_extremal_graph_not_isIsoSubgraph [Fintype β]
+theorem exists_extremal_graph_forbidden_free [Fintype β]
     (h : A.edgeSet.Nonempty) :
-    ∃ E : SimpleGraph β, ¬A.IsIsoSubgraph E ∧
+    ∃ E : SimpleGraph β, A.Free E ∧
       ∀ (B : SimpleGraph β) [DecidableRel B.Adj],
-        ¬A.IsIsoSubgraph B → B.edgeFinset.card ≤ E.edgeFinset.card := by
-  let p  := ((¬A.IsIsoSubgraph ·) : SimpleGraph β → Prop)
-  have hp : ∃ B, p B := ⟨⊥, not_isIsoSubgraph_bot h⟩
+        A.Free B → B.edgeFinset.card ≤ E.edgeFinset.card := by
+  let p  := (A.Free : SimpleGraph β → Prop)
+  have hp : ∃ B, p B := ⟨⊥, free_bot h⟩
   exact exists_extremal_graph p hp
 
 /-- The extremal graphs on vertex type `β` that do not contain `A` as an
 isomorphic subgraph have `extremalNumber β A` number of edges. -/
 theorem card_edgeFinset_eq_extremalNumber_iff
     [Fintype β] {E : SimpleGraph β} [DecidableRel E.Adj]
-    (h_free : ¬A.IsIsoSubgraph E) :
+    (h_free : A.Free E) :
     E.edgeFinset.card = extremalNumber β A ↔
       ∀ (B : SimpleGraph β) [DecidableRel B.Adj],
-        ¬A.IsIsoSubgraph B → B.edgeFinset.card ≤ E.edgeFinset.card := by
+        A.Free B → B.edgeFinset.card ≤ E.edgeFinset.card := by
   constructor
   . intro h_eq
     rw [h_eq]

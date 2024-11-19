@@ -29,7 +29,7 @@ theorem extremalNumber_completeGraph
   have hT : (turanGraph n r).IsTuranMaximal r :=
     isTuranMaximal_turanGraph hr_pos
   simp_rw [IsTuranMaximal,
-    ←not_isIsoSubgraph_completeGraph_iff_cliqueFree] at hT
+    ←completeGraph_free_iff_cliqueFree] at hT
   symm; rw [card_edgeFinset_eq_extremalNumber_iff hT.1]
   exact hT.2
 
@@ -41,7 +41,7 @@ See `isTuranMaximal_iff_nonempty_iso_turanGraph`. -/
 theorem card_edgeFinset_eq_extremalNumber_completeGraph_iff_iso_turanGraph
     {β: Type*} [Fintype β] (G : SimpleGraph β) [DecidableRel G.Adj]
     (α : Type*) [Fintype α] [Nontrivial α] :
-    ¬(completeGraph α).IsIsoSubgraph G ∧
+    (completeGraph α).Free G ∧
         G.edgeFinset.card = extremalNumber β (completeGraph α)
       ↔ Nonempty (G ≃g turanGraph (Fintype.card β) (Fintype.card α-1)) := by
   let n := Fintype.card β
@@ -54,7 +54,7 @@ theorem card_edgeFinset_eq_extremalNumber_completeGraph_iff_iso_turanGraph
     rw [Nat.sub_one_add_one]
     exact Fintype.card_ne_zero
   simp_rw [←isTuranMaximal_iff_nonempty_iso_turanGraph hr_pos,
-    IsTuranMaximal, ←not_isIsoSubgraph_completeGraph_iff_cliqueFree,
-    ←isIsoSubgraph_iff_of_iso f, and_congr_right_iff]
+    IsTuranMaximal, ←completeGraph_free_iff_cliqueFree,
+    ←free_iff_of_iso f, and_congr_right_iff]
   intro h_free
   simp_rw [card_edgeFinset_eq_extremalNumber_iff h_free]

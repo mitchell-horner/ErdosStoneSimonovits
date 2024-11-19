@@ -167,6 +167,6 @@ theorem extremalNumber_completeGraph_le
     apply mul_nonneg _ (sq_nonneg _)
     exact Nat.one_sub_one_div_cast_nonneg r
   simp_rw [extremalNumber_le_iff_of_nonneg _ _ h_nonneg,
-    not_isIsoSubgraph_completeGraph_iff_cliqueFree]
+    completeGraph_free_iff_cliqueFree]
   intro G _ h_cliqueFree
   exact card_edgeFinset_le_of_cliqueFree hr h_cliqueFree

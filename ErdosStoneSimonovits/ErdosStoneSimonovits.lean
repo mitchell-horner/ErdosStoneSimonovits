@@ -788,10 +788,10 @@ where
           exact Nat.cast_nonneg _
       -- contains `completeEquipartiteGraph (Fin (r+1)) (Fin t)`
       rw [extremalNumber_le_iff_of_nonneg V _ h_nonneg]
-      classical
-      intro G
+      intro G _
       contrapose!
       intro h
+      rw [not_not]
       exact h₂ hN_lt_cardV (le_of_lt h)
 
 /-- Suppose `r > 0` is a natural number such that the chromatic number of the
