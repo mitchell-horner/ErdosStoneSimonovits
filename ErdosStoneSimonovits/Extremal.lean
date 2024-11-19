@@ -86,7 +86,7 @@ end SubgraphIso
 
 end SubgraphIso
 
-section IsoSubgraph
+section IsIsoSubgraph
 
 /-- The relation that one `SimpleGraph` is an isomorphic subgraph of another.
 
@@ -155,6 +155,7 @@ lemma isIsoSubgraph_iff_of_iso (f : A ≃g B) :
   ⟨IsIsoSubgraph.trans ⟨f.symm.toSubgraphIso⟩,
     IsIsoSubgraph.trans ⟨f.toSubgraphIso⟩⟩
 
+end IsIsoSubgraph
 section ExtremalNumber
 
 open Classical in
