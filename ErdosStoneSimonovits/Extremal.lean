@@ -156,6 +156,21 @@ lemma isIsoSubgraph_iff_of_iso (f : A ≃g B) :
     IsIsoSubgraph.trans ⟨f.toSubgraphIso⟩⟩
 
 end IsIsoSubgraph
+
+section Free
+
+/-- The relation that a `SimpleGraph` does not contain a copy of another
+`SimpleGraph`. -/
+abbrev Free (A : SimpleGraph α) (B : SimpleGraph β) := ¬A.IsIsoSubgraph B
+
+/-- If `A ≃g B`, then `C` is `A`-free if `C` is `B`-free. -/
+lemma free_iff_of_iso (f : A ≃g B) :
+    A.Free C ↔ B.Free C := by
+  rw [not_iff_not]
+  exact isIsoSubgraph_iff_of_iso f
+
+end Free
+
 section ExtremalNumber
 
 open Classical in
