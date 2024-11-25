@@ -15,7 +15,7 @@ namespace SimpleGraph
 /-- Suppose `r`, `t` are natural numbers and `ε > 0` is a real number. A simple
 graph of sufficently many vertices `n` having a minimal degree of at least
 `(1-1/r+ε)*n` contains a copy of a complete equipartite graph in `r+1`
-partitions each of size `t` as an isomorphic subgraph.
+partitions each of size `t`.
 
 This is the minimal-degree version of the **Erdős-Stone-Simonovits theorem**. -/
 theorem isIsoSubgraph_completeEquipartiteGraph_of_minDegree
@@ -554,7 +554,7 @@ private lemma exists_induced_subgraph_for_minDegree_for_card_sq
 /-- Suppose `r`, `t` are natural numbers and `ε > 0` is a real number. A simple
 graph of sufficently many vertices `n` having at least `(1-1/r+ε)*n^2/2` edges
 contains a copy of a complete equipartite graph in `r+1` partitions each of
-size `t` as an isomorphic subgraph.
+size `t`.
 
 This is the **Erdős-Stone-Simonovits theorem**. -/
 theorem isIsoSubgraph_completeEquipartiteGraph_of_card_edgeFinset
@@ -821,8 +821,8 @@ theorem isLittleO_extremalNumber_of_chromaticNumber
   all_goals linarith
 
 /-- Suppose `r > 0` is a natural number such that the chromatic number of the
-simple graph `H` equals `r+1`. The density of the extremal graphs that do not
-contain `H` as an isomorphic subgraph tends to `1-1/r` at infinity.
+simple graph `H` equals `r+1`. The density of the `H`-free extremal graphs
+tends to `1-1/r` at infinity.
 
 This is a corollary of the **Erdős-Stone-Simonovits theorem**. -/
 theorem tendsto_extremalNumber_div_choose_two_of_chromaticNumber

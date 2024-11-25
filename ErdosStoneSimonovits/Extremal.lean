@@ -175,8 +175,7 @@ section ExtremalNumber
 
 open Classical in
 /-- The extremal number of a finite type `β` and a simple graph `A` is the
-maximal number of edges in a simple graph on the vertex type `β` that does not
-contain `A` as an isomorphic subgraph.
+maximal number of edges in a `A`-free simple graph on the vertex type `β`.
 
 Note that if `A` is an isomorphic subgraph of any simple graph on the vertex
 type `β` then this is `0`. -/
@@ -249,7 +248,7 @@ theorem extremalNumber_le_choose_two
   intros; exact card_edgeFinset_le_card_choose_two
 
 /-- The extremal numbers of `A` are at most the the extremal numbers of any
-simple graph that contains `A` as an isomorphic subgraph. -/
+simple graph that contains `A`. -/
 theorem extremalNumber_le_extremalNumber_of_isIsoSubgraph [Fintype β]
     (h : A.IsIsoSubgraph C) :
     extremalNumber β A ≤ extremalNumber β C := by

@@ -208,16 +208,15 @@ theorem completeEquipartiteGraph_colorable_of_fin :
 lemma Colorable.mono_of_isIsoSubgraph {n : ℕ} (h : A.IsIsoSubgraph B) :
   B.Colorable n → A.Colorable n := fun ⟨C⟩ ↦ ⟨C.comp h.some⟩
 
-/-- If `A` is not `n`-colorable and `G` is `n`-colorable, `G` does not contain
-`A` as an isomorphic subgraph. -/
+/-- If `A` is not `n`-colorable and `G` is `n`-colorable, `G` is `A`-free. -/
 lemma free_of_colorable (nh_col : ¬A.Colorable n)
     (h_col : G.Colorable n) : A.Free G := by
   contrapose! nh_col
   rw [not_not] at nh_col
   exact Colorable.mono_of_isIsoSubgraph nh_col h_col
 
-/-- If `G` is not `n`-colorable then `completeEquipartiteGraph (Fin n) β`
-cannot contain `G` as an isomorphic subgraph. -/
+/-- If `G` is not `n`-colorable then `completeEquipartiteGraph (Fin n) β` is
+`G`-free. -/
 theorem completeEquipartiteGraph_free_of_not_colorable
     {n : ℕ} (h : ¬G.Colorable n) :
     G.Free (completeEquipartiteGraph (Fin n) β) := by
@@ -233,7 +232,7 @@ instance [DecidableEq α] {C : Coloring G α} {c : α} :
   infer_instance
 
 /-- If `G` is `n`-colorable then `completeEquipartiteGraph (Fin n) β`
-contains `G` as an isomorphic subgraph for sufficently large `β`. -/
+contains `G` for sufficently large `β`. -/
 theorem isIsoSubgraph_completeEquipartiteGraph_of_colorable [Fintype V]
     (h : G.Colorable n) :
     ∃ b, ∀ {β : Type*} [Fintype β],
@@ -295,7 +294,7 @@ variable [DecidableEq V] [Fintype β] [DecidableRel G.Adj]
 
 /-- If `A` is not `n`-colorable and `G` is `n`-colorable on vertex type
 `|V| ≤ |β|`, the simple graph `B` constructed by mapping `G` via an embedding
-`V ↪ β` does not contain `A` as an isomorphic subgraph. -/
+`V ↪ β` is `A`-free. -/
 theorem lt_extremalNumber_of_colorable
     (h_card_le : Fintype.card V ≤ Fintype.card β)
     (nh_col : ¬A.Colorable n) (h_col : G.Colorable n)
@@ -395,8 +394,8 @@ end CompleteBipartiteGraph
 
 section CompleteGraph
 
-/-- A simple graph does not contain `completeGraph (Fin n)` as an isomorphic
-subgraph if and only if it has no `n`-cliques. -/
+/-- A simple graph does not contain `completeGraph (Fin n)` if and only if it
+has no `n`-cliques. -/
 theorem completeGraph_free_iff_cliqueFree {n : ℕ} :
     (completeGraph (Fin n)).Free G ↔ G.CliqueFree n := by
   rw [←not_iff_not, not_not, cliqueFree_iff, not_isEmpty_iff]

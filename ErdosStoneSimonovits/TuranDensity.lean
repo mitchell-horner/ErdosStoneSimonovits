@@ -12,8 +12,7 @@ section TuranDensity
 open Topology Asymptotics
 
 /-- The *Turán density* of a simple graph `H` is the limit of the maximum
-density of simple graphs that do not contain a copy of `H` as an isomorphic
-subgraph.
+density of `H`-free simple graphs.
 
 See `tendsto_turanDensity` for proof of existence. -/
 noncomputable def turanDensity (H : SimpleGraph V) :=
@@ -146,7 +145,7 @@ where
               exact Nat.pred_succ _
             rw [←extremalNumber_eq_of_iso
               Iso.refl (Fintype.equivFinOfCardEq h_cardEq)]
-            -- `n`-vertex induced subgraphs of `G` do not contain `H`
+            -- `n`-vertex induced subgraphs of `G` are `H`-free
             apply le_extremalNumber
             contrapose! h
             rw [not_not] at h ⊢
