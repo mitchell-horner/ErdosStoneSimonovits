@@ -184,16 +184,10 @@ noncomputable def extremalNumber
   Finset.sup (Finset.univ.filter A.Free : Finset (SimpleGraph β))
     (·.edgeFinset.card : SimpleGraph β → ℕ)
 
-open Classical in
-theorem extremalNumber_eq_sup
-    (β : Type*) [Fintype β] (A : SimpleGraph α) : extremalNumber β A =
-  Finset.sup (Finset.univ.filter A.Free : Finset (SimpleGraph β))
-    (·.edgeFinset.card : SimpleGraph β → ℕ) := by rfl
-
-open Classical in
 theorem le_extremalNumber [Fintype β] [DecidableRel B.Adj]
     (h : A.Free B) :
     B.edgeFinset.card ≤ extremalNumber β A := by
+  classical
   let s := (Finset.univ.filter A.Free : Finset (SimpleGraph β))
   let f := (·.edgeFinset.card : SimpleGraph β → ℕ)
   suffices h : f B ≤ s.sup f by convert h
@@ -211,16 +205,18 @@ theorem extremalNumber_le_iff
     (β : Type*) [Fintype β] (A : SimpleGraph α) (x : ℕ) :
     extremalNumber β A ≤ x ↔ ∀ (B : SimpleGraph β) [DecidableRel B.Adj],
       A.Free B → B.edgeFinset.card ≤ x := by
-  simp_rw [extremalNumber_eq_sup, Finset.sup_le_iff, Finset.mem_filter,
+  simp_rw [extremalNumber, Finset.sup_le_iff, Finset.mem_filter,
     Finset.mem_univ, true_and]
   exact ⟨fun h B _ hB ↦ by convert h B hB, fun h B hB ↦ by convert h B hB⟩
 
-open Classical in
 theorem lt_extremalNumber_iff
     (β : Type*) [Fintype β] (A : SimpleGraph α) (x : ℕ) :
-    x < extremalNumber β A ↔ ∃ B : SimpleGraph β,
+    x < extremalNumber β A ↔ ∃ B : SimpleGraph β, ∃ _ : DecidableRel B.Adj,
       A.Free B ∧ x < B.edgeFinset.card := by
-  rw [extremalNumber_eq_sup]; simp
+  simp_rw [extremalNumber, Finset.lt_sup_iff, Finset.mem_filter,
+    Finset.mem_univ, true_and]
+  exact ⟨fun ⟨B, h₁, h₂⟩ ↦ ⟨B, _, h₁, h₂⟩,
+    fun ⟨B, _, h₁, h₂⟩ ↦ ⟨B, h₁, by convert h₂⟩⟩
 
 variable {R : Type*} [LinearOrderedSemiring R] [FloorSemiring R] {x : R}
 
@@ -231,10 +227,9 @@ theorem extremalNumber_le_iff_of_nonneg
   simp_rw [←Nat.le_floor_iff hx_nonneg]
   exact extremalNumber_le_iff β A ⌊x⌋₊
 
-open Classical in
 theorem lt_extremalNumber_iff_of_nonneg
     (β : Type*) [Fintype β] (A : SimpleGraph α) (hx_nonneg : 0 ≤ x) :
-    x < ↑(extremalNumber β A) ↔ ∃ B : SimpleGraph β,
+    x < ↑(extremalNumber β A) ↔ ∃ B : SimpleGraph β, ∃ _ : DecidableRel B.Adj,
       A.Free B ∧ x < ↑B.edgeFinset.card := by
   simp_rw [←Nat.floor_lt hx_nonneg]
   exact lt_extremalNumber_iff β A ⌊x⌋₊
@@ -298,7 +293,7 @@ theorem extremalNumber_of_card_le_one
     extremalNumber β A = 0 := by
   haveI : Subsingleton β := by
     rwa [Fintype.card_le_one_iff_subsingleton] at h
-  simp_rw [extremalNumber_eq_sup, Finset.univ_unique,
+  simp_rw [extremalNumber, Finset.univ_unique,
     Finset.filter_singleton, instInhabited_default]
   by_cases h : A.Free (⊥ : SimpleGraph β)
   all_goals simp [h, -not_nonempty_iff, -nonempty_subtype, -Set.toFinset_card]
@@ -314,26 +309,26 @@ abbrev IsExtremal {V : Type*} [Fintype V]
   p G ∧ ∀ (H : SimpleGraph V) [DecidableRel H.Adj],
     p H → H.edgeFinset.card ≤ G.edgeFinset.card
 
-open Classical in
 /-- There exist extremal graphs satisfying the predicate `p` provided that at
 least one simple graph satisfies the predicate `p`. -/
-theorem exists_extremal_graph [Fintype V]
-    (p : SimpleGraph V → Prop) (h : ∃ G, p G) :
-    ∃ E : SimpleGraph V, E.IsExtremal p := by
+theorem exists_extremal_graph [Fintype V] [DecidableEq V]
+    (p : SimpleGraph V → Prop) [DecidablePred p] (h : ∃ G, p G) :
+    ∃ E : SimpleGraph V, ∃ _ : DecidableRel E.Adj, E.IsExtremal p := by
+  classical
   let s := (Finset.univ.filter (p ·) : Finset (SimpleGraph V))
-  suffices h : ∃ E ∈ s, ∀ G ∈ s, G.edgeFinset.card ≤ E.edgeFinset.card by
-    conv at h =>
-      rhs; intro
-      rw [Finset.mem_filter]
-      rhs; intro
-      rw [Finset.mem_filter]
-    simp_rw [Finset.mem_univ, true_and] at h
-    convert h
-    exact ⟨fun h ↦ by convert h, fun h _ ↦ by convert h⟩
-  apply Finset.exists_max_image s
-  rw [Finset.filter_nonempty_iff]
-  convert h
-  simp
+  have hs : s.Nonempty := by
+    use Exists.choose h
+    rw [Finset.mem_filter]
+    exact ⟨Finset.mem_univ _, Exists.choose_spec h⟩
+  obtain ⟨E, hp, h_extremal⟩ :=
+    Finset.exists_max_image s (·.edgeFinset.card) hs
+  use E, by infer_instance
+  rw [Finset.mem_filter] at hp
+  conv at h_extremal =>
+    intro G; rw [Finset.mem_filter]
+  refine ⟨hp.2, ?_⟩
+  intro G _ hp'
+  convert h_extremal G ⟨Finset.mem_univ G, hp'⟩
 
 lemma free_bot (h : G.edgeSet.Nonempty) :
     G.Free (⊥ : SimpleGraph β) := by
@@ -342,12 +337,16 @@ lemma free_bot (h : G.edgeSet.Nonempty) :
   let ⟨e, he⟩ := h
   exact ⟨e.map f, Hom.map_mem_edgeSet f he⟩
 
-open Classical in
 /-- There exist extremal graphs on vertex type `β` that are `A`-free if `A` has
 at least one edge. -/
-theorem exists_extremal_graph_forbidden_free
-    [Fintype β] (h : A.edgeSet.Nonempty) :
-    ∃ E : SimpleGraph β, E.IsExtremal A.Free := by
+theorem exists_extremal_graph_of_free [Fintype α] [DecidableEq α]
+    (h : A.edgeSet.Nonempty) [Fintype β] [DecidableEq β] :
+    ∃ E : SimpleGraph β, ∃ _ : DecidableRel E.Adj, E.IsExtremal A.Free := by
+  haveI : DecidablePred (A.Free : SimpleGraph β → Prop) := by
+    intro B; unfold Free IsIsoSubgraph SubgraphIso
+    rw [not_nonempty_iff, isEmpty_subtype]
+    haveI : Fintype (A →g B) := Fintype.ofFinite _
+    infer_instance
   let p  := (A.Free : SimpleGraph β → Prop)
   have hp : ∃ B, p B := ⟨⊥, free_bot h⟩
   exact exists_extremal_graph p hp
