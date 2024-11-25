@@ -316,14 +316,11 @@ abbrev IsExtremal {V : Type*} [Fintype V]
     p H → H.edgeFinset.card ≤ G.edgeFinset.card
 
 open Classical in
-/-- There exist extremal graphs on vertex type `V` satisfying the predicate
-`p` provided that at least one simple graph on vertex type `V` satisfies the
-predicate `p`. -/
+/-- There exist extremal graphs satisfying the predicate `p` provided that at
+least one simple graph satisfies the predicate `p`. -/
 theorem exists_extremal_graph [Fintype V]
     (p : SimpleGraph V → Prop) (h : ∃ G, p G) :
-    ∃ E : SimpleGraph V, p E ∧
-      ∀ (G : SimpleGraph V) [DecidableRel G.Adj],
-        p G → G.edgeFinset.card ≤ E.edgeFinset.card := by
+    ∃ E : SimpleGraph V, E.IsExtremal p := by
   let s := (Finset.univ.filter (p ·) : Finset (SimpleGraph V))
   suffices h : ∃ E ∈ s, ∀ G ∈ s, G.edgeFinset.card ≤ E.edgeFinset.card by
     conv at h =>
@@ -347,42 +344,30 @@ lemma free_bot (h : G.edgeSet.Nonempty) :
   exact ⟨e.map f, Hom.map_mem_edgeSet f he⟩
 
 open Classical in
-/-- There exist extremal graphs on vertex type `β` that do not contain `A` as
-an isomorphic subgraph provided that `A` has at least one edge. -/
-theorem exists_extremal_graph_forbidden_free [Fintype β]
-    (h : A.edgeSet.Nonempty) :
-    ∃ E : SimpleGraph β, A.Free E ∧
-      ∀ (B : SimpleGraph β) [DecidableRel B.Adj],
-        A.Free B → B.edgeFinset.card ≤ E.edgeFinset.card := by
+/-- There exist extremal graphs on vertex type `β` that are `A`-free if `A` has
+at least one edge. -/
+theorem exists_extremal_graph_forbidden_free
+    [Fintype β] (h : A.edgeSet.Nonempty) :
+    ∃ E : SimpleGraph β, E.IsExtremal A.Free := by
   let p  := (A.Free : SimpleGraph β → Prop)
   have hp : ∃ B, p B := ⟨⊥, free_bot h⟩
   exact exists_extremal_graph p hp
 
-/-- The extremal graphs on vertex type `β` that do not contain `A` as an
-isomorphic subgraph have `extremalNumber β A` number of edges. -/
+/-- The extremal graphs on vertex type `β` that are `A`-free have
+`extremalNumber β A` number of edges. -/
 theorem card_edgeFinset_eq_extremalNumber_iff
-    [Fintype β] {E : SimpleGraph β} [DecidableRel E.Adj]
-    (h_free : A.Free E) :
-    E.edgeFinset.card = extremalNumber β A ↔
-      ∀ (B : SimpleGraph β) [DecidableRel B.Adj],
-        A.Free B → B.edgeFinset.card ≤ E.edgeFinset.card := by
+    [Fintype β] {E : SimpleGraph β} [DecidableRel E.Adj] :
+    (A.Free E) ∧ E.edgeFinset.card = extremalNumber β A
+      ↔ E.IsExtremal A.Free := by
+  rw [IsExtremal, and_congr_right_iff]
+  intro h_free
   constructor
   . intro h_eq
     rw [h_eq]
-    intro B
-    exact le_extremalNumber
+    intro _ _ h_free'
+    exact le_extremalNumber h_free'
   . intro h_extremal
-    by_contra! nh
-    have h_lt : E.edgeFinset.card < extremalNumber β A := by
-      rw [ne_iff_lt_or_gt, or_iff_left] at nh
-      exact nh
-      push_neg
-      apply le_extremalNumber h_free
-    have h_le : extremalNumber β A ≤ E.edgeFinset.card := by
-      rw [extremalNumber_le_iff]
-      exact h_extremal
-    absurd lt_of_le_of_lt h_le h_lt
-    rw [lt_self_iff_false, not_false_eq_true]
-    trivial
+    apply eq_of_le_of_le (le_extremalNumber h_free)
+    rwa [←extremalNumber_le_iff] at h_extremal
 
 end IsExtremal
