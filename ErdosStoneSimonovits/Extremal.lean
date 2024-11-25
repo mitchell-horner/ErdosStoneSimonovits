@@ -304,6 +304,17 @@ theorem extremalNumber_of_card_le_one
   by_cases h : A.Free (⊥ : SimpleGraph β)
   all_goals simp [h, -not_nonempty_iff, -nonempty_subtype, -Set.toFinset_card]
 
+end ExtremalNumber
+
+section IsExtremal
+
+/-- A simple graph `G` is an extremal graph satisfying the predicate `p` if
+`G` has the maximum number of edges of any simple graph satisfying `p`. -/
+abbrev IsExtremal {V : Type*} [Fintype V]
+    (G : SimpleGraph V) [DecidableRel G.Adj] (p : SimpleGraph V → Prop) :=
+  p G ∧ ∀ (H : SimpleGraph V) [DecidableRel H.Adj],
+    p H → H.edgeFinset.card ≤ G.edgeFinset.card
+
 open Classical in
 /-- There exist extremal graphs on vertex type `V` satisfying the predicate
 `p` provided that at least one simple graph on vertex type `V` satisfies the
@@ -374,4 +385,4 @@ theorem card_edgeFinset_eq_extremalNumber_iff
     rw [lt_self_iff_false, not_false_eq_true]
     trivial
 
-end ExtremalNumber
+end IsExtremal
