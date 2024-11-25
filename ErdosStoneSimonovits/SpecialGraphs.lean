@@ -411,4 +411,12 @@ theorem completeGraph_free_iff_cliqueFree {n : ℕ} :
   rw [h]
   exact G.loopless (f w)
 
+lemma completeGraph_edgeSet_nonempty (α : Type*) [h : Nontrivial α] :
+    (completeGraph α).edgeSet.Nonempty := by
+  rw [nontrivial_iff] at h
+  obtain ⟨a₁, a₂, h⟩ := h
+  use s(a₁, a₂)
+  rw [mem_edgeSet, completeGraph_eq_top, top_adj]
+  exact h
+
 end CompleteGraph

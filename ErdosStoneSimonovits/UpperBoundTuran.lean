@@ -8,16 +8,17 @@ namespace SimpleGraph
 
 open BigOperators
 
-open Classical in
 /-- There exist extremal graphs on vertex type `β` that have no `n`-cliques
 provided that `n ≥ 2`. -/
-theorem exists_extremal_graph_cliqueFree [Fintype β] {n : ℕ} (hn : n ≥ 2) :
-    ∃ E : SimpleGraph β, E.CliqueFree n ∧
-      ∀ (B : SimpleGraph β) [DecidableRel B.Adj],
-        B.CliqueFree n → B.edgeFinset.card ≤ E.edgeFinset.card := by
-  let p := ((CliqueFree · n) : SimpleGraph β → Prop)
-  let hp : ∃ B, p B := ⟨⊥, cliqueFree_bot hn⟩
-  exact exists_extremal_graph p hp
+theorem exists_extremal_graph_of_cliqueFree
+    [Fintype β] [DecidableEq β] {n : ℕ} (hn : n ≥ 2) :
+    ∃ E : SimpleGraph β, ∃ _ : DecidableRel E.Adj,
+      E.IsExtremal (·.CliqueFree n) := by
+  simp_rw [←completeGraph_free_iff_cliqueFree]
+  haveI : Nontrivial (Fin n) := by
+    rw [Fin.nontrivial_iff_two_le]
+    exact hn
+  exact exists_extremal_graph_of_free (completeGraph_edgeSet_nonempty (Fin n))
 
 /-- A `r+1`-clique free simple graph on the vertex type `V` has at most
 `(1-1/r)*(Fintype.card V)^2/2` edges.
@@ -55,13 +56,12 @@ theorem card_edgeFinset_le_of_cliqueFree
             . rw [sq_pos_iff, Nat.cast_ne_zero]
               exact h_eq_zero
   . have hr_lt : r < Fintype.card V := lt_of_not_le h_le_r
-    classical
     -- there exists a `r+1`-clique-free extremal graph
-    have ⟨M, h_cliqueFree, h_extremal⟩ :
-      ∃ M : SimpleGraph V, M.CliqueFree (r+1) ∧
+    have ⟨M, _, h_free, h_extremal⟩ :
+      ∃ M : SimpleGraph V, ∃ _ : DecidableRel M.Adj, M.CliqueFree (r+1) ∧
         ∀ (G : SimpleGraph V) [DecidableRel G.Adj],
           G.CliqueFree (r+1) → G.edgeFinset.card ≤ M.edgeFinset.card := by
-      apply exists_extremal_graph_cliqueFree
+      apply exists_extremal_graph_of_cliqueFree
       field_simp [Nat.succ_le_succ_iff, hr]
     suffices h_le : M.edgeFinset.card ≤ ((1-1/r)*(Fintype.card V)^2/2 : ℝ) by
       trans (M.edgeFinset.card : ℝ)
@@ -69,16 +69,16 @@ theorem card_edgeFinset_le_of_cliqueFree
         convert h_extremal G h
       . exact h_le
     -- the `r+1`-clique-free extremal graph contains an `r`-clique
-    have nh_cliqueFree : ¬M.CliqueFree r := by
-        by_contra h_cliqueFree'
-        have h_clique := CliqueFree.mono hr_lt h_cliqueFree Finset.univ
+    have nh_free : ¬M.CliqueFree r := by
+        by_contra h_free'
+        have h_clique := CliqueFree.mono hr_lt h_free Finset.univ
         rw [isNClique_iff, not_and_or, Finset.card_univ, eq_self_iff_true,
             not_true, or_false, isClique_iff, Set.Pairwise] at h_clique
         push_neg at h_clique
         have ⟨v, _, w, _, h_ne, hadj⟩ := h_clique
         let M' := M ⊔ edge v w
         have h_clique' : M'.CliqueFree (r+1) :=
-          CliqueFree.sup_edge h_cliqueFree' v w
+          CliqueFree.sup_edge h_free' v w
         have h_lt' : M.edgeFinset.card < M'.edgeFinset.card :=
           calc M.edgeFinset.card
             _ < M.edgeFinset.card + 1 := Nat.lt_succ_self _
@@ -87,7 +87,7 @@ theorem card_edgeFinset_le_of_cliqueFree
         absurd h_extremal M' h_clique'
         push_neg
         convert h_lt'
-    let ⟨s, h_isClique⟩ := not_forall_not.mp nh_cliqueFree
+    let ⟨s, h_isClique⟩ := not_forall_not.mp nh_free
     have h_card_compl :
         Fintype.card ((↑s)ᶜ : Set V) = (Fintype.card V)-r := by
       simp_rw [←Finset.coe_compl, Finset.coe_sort_coe, Fintype.card_coe,
@@ -129,7 +129,7 @@ theorem card_edgeFinset_le_of_cliqueFree
               exact (h_neighborFinset w hw).symm
             absurd IsNClique.insert ⟨h_isClique.clique, by rfl⟩ hadj
             rw [h_isClique.card_eq]
-            exact h_cliqueFree (insert v s)
+            exact h_free (insert v s)
         _ = ((Fintype.card V)-r)*(r-1) := by
             rw [Finset.sum_const, Finset.card_compl, h_isClique.card_eq,
               smul_eq_mul]
@@ -142,9 +142,9 @@ theorem card_edgeFinset_le_of_cliqueFree
     -- there are at most `(1-1/r)*(Fintype.card V-r)^2/2` edges in `sᶜ`
     have h₃ : (M.induce (↑s)ᶜ).edgeFinset.card
         ≤ ((1-1/r)*(Fintype.card V-r)^2/2 : ℝ) := by
-      have h_cliqueFree : (M.induce (↑s)ᶜ).CliqueFree (r+1) :=
-        CliqueFree.comap (Embedding.induce ((↑s)ᶜ : Set V)) h_cliqueFree
-      convert card_edgeFinset_le_of_cliqueFree hr h_cliqueFree using 1
+      have h_free : (M.induce (↑s)ᶜ).CliqueFree (r+1) :=
+        CliqueFree.comap (Embedding.induce ((↑s)ᶜ : Set V)) h_free
+      convert card_edgeFinset_le_of_cliqueFree hr h_free using 1
       rw [h_card_compl, Nat.cast_sub (le_of_lt hr_lt)]
     convert add_le_add_three h₁ h₂ h₃ using 1
     field_simp
@@ -168,5 +168,5 @@ theorem extremalNumber_completeGraph_le
     exact Nat.one_sub_one_div_cast_nonneg r
   simp_rw [extremalNumber_le_iff_of_nonneg _ _ h_nonneg,
     completeGraph_free_iff_cliqueFree]
-  intro G _ h_cliqueFree
-  exact card_edgeFinset_le_of_cliqueFree hr h_cliqueFree
+  intro G _ h_free
+  exact card_edgeFinset_le_of_cliqueFree hr h_free
