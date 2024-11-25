@@ -67,6 +67,10 @@ theorem card_mem_edgeFinset
   rw [show e.val = e'.val by rfl]
   exact card_mem_edgeSet e'
 
+theorem _root_.Sym2.mem_coe_toFinset [DecidableEq V] {e : Sym2 V} {v : V} :
+    v ∈ e ↔ v ∈ (e : Set V).toFinset := by
+  rw [←SetLike.mem_coe, Set.mem_toFinset]
+
 /-- The limit in the *Turán density* of a simple graph `H` exists. -/
 lemma exists_tendsto_extremalNumber_div_choose_two (H : SimpleGraph V) :
     ∃ x, Filter.Tendsto
@@ -118,9 +122,9 @@ where
     let s := (G.edgeFinset ×ˢ Finset.univ).filter fun (e, v) ↦ v ∉ e
     -- counting over edges
     have hs₁ : s.card = G.edgeFinset.card * (n-1) := by
-      classical simp_rw [Finset.card_filter _ _, Finset.sum_product,
-        ←Finset.card_filter, ←SetLike.mem_coe, ←Set.mem_toFinset,
-        Finset.filter_not, Finset.filter_mem_eq_inter]
+      simp_rw [Finset.card_filter _ _, Finset.sum_product,
+        ←Finset.card_filter _ _, Sym2.mem_coe_toFinset, Finset.filter_not,
+        Finset.filter_mem_eq_inter]
       conv_lhs =>
         rw [←Finset.sum_attach]
         rhs; intro e
