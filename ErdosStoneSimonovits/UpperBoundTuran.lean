@@ -25,8 +25,8 @@ theorem exists_extremal_graph_of_cliqueFree
 
 This is the upper-bound of **Turán's theorem**. -/
 theorem card_edgeFinset_le_of_cliqueFree
-    {V : Type*} [DecidableEq V] [Fintype V] {G : SimpleGraph V} [DecidableRel G.Adj]
-    {r : ℕ} (hr : r ≥ 1) (h : G.CliqueFree (r+1)) :
+    {V : Type*} [DecidableEq V] [Fintype V] {r : ℕ} (hr : r ≥ 1)
+    {G : SimpleGraph V} [DecidableRel G.Adj] (h : G.CliqueFree (r+1)) :
     G.edgeFinset.card ≤ ((1-1/r)*(Fintype.card V)^2/2 : ℝ) := by
   by_cases h_le_r : Fintype.card V ≤ r
   . by_cases h_eq_zero : Fintype.card V = 0
