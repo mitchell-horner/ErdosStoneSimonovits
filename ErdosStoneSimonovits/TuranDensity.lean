@@ -11,7 +11,7 @@ section TuranDensity
 
 open Topology Asymptotics
 
-/-- The *Turán density* of a simple graph `H` is the limit of the maximum
+/-- The **Turán density** of a simple graph `H` is the limit of the maximum
 density of `H`-free simple graphs.
 
 See `tendsto_turanDensity` for proof of existence. -/
@@ -71,7 +71,66 @@ theorem _root_.Sym2.mem_coe_toFinset [DecidableEq V] {e : Sym2 V} {v : V} :
     v ∈ e ↔ v ∈ (e : Set V).toFinset := by
   rw [←SetLike.mem_coe, Set.mem_toFinset]
 
-/-- The limit in the *Turán density* of a simple graph `H` exists. -/
+lemma extremalNumber_div_choose_two_succ_le (n : ℕ) (hn : n ≥ 2) :
+    (extremalNumber (Fin (n+1)) H / (n+1).choose 2 : ℝ)
+      ≤ (extremalNumber (Fin n) H / n.choose 2 : ℝ) := by
+  have h_succ_choose_two_pos : 0 < ((n+1).choose 2 : ℝ) := by
+    rw [Nat.cast_pos]
+    apply Nat.choose_pos
+    apply le_of_lt
+    exact lt_of_le_of_lt hn (Nat.lt_succ_self n)
+  rw [div_le_iff₀ h_succ_choose_two_pos,
+    extremalNumber_le_iff_of_nonneg _ _ (by positivity)]
+  intro G _ h
+  have h_choose_two_pos : 0 < (n.choose 2 : ℝ) := by
+    rw [Nat.cast_pos]
+    exact Nat.choose_pos hn
+  rw [mul_comm, ←mul_div_assoc, le_div_iff₀' h_choose_two_pos]
+  -- double-counting edges and vertices
+  let s := (G.edgeFinset ×ˢ Finset.univ).filter fun (e, v) ↦ v ∉ e
+  -- counting over edges
+  have hs₁ : s.card = G.edgeFinset.card * (n-1) := by
+    simp_rw [Finset.card_filter _ _, Finset.sum_product,
+      ←Finset.card_filter _ _, Sym2.mem_coe_toFinset, Finset.filter_not,
+      Finset.filter_mem_eq_inter]
+    conv_lhs =>
+      rw [←Finset.sum_attach]
+      rhs; intro e
+      rw [Finset.univ_inter, ←Finset.compl_eq_univ_sdiff, Finset.card_compl,
+        Fintype.card_fin, Set.toFinset_card, card_mem_edgeFinset e]
+    rw [Finset.sum_const, Finset.card_attach, smul_eq_mul,
+      Nat.succ_sub_succ_eq_sub]
+  -- counting over vertices
+  have hs₂ : s.card ≤ extremalNumber (Fin n) H * (n+1) := by
+    conv_rhs =>
+      rw [←Fintype.card_fin (n+1), ←Finset.card_univ, mul_comm,
+        ←smul_eq_mul, ←Finset.sum_const]
+    simp_rw [Finset.card_filter _ _, Finset.sum_product_right,
+      ←Finset.card_filter, ←edgeFinset_deleteIncidenceSet, Set.toFinset_card,
+      deleteIncidenceSet_eq_restrict_compl_singleton G, ←Set.toFinset_card,
+      card_edgeFinset_restrict_eq_induce]
+    apply Finset.sum_le_sum
+    intro x _
+    have h_card_eq : Fintype.card (↑{x}ᶜ : Set (Fin (n+1))) = n := by
+      rw [←Set.toFinset_card, Set.toFinset_compl, Set.toFinset_singleton,
+        Finset.card_compl, Finset.card_singleton, Fintype.card_fin]
+      exact Nat.pred_succ n
+    rw [←extremalNumber_eq_of_iso
+      Iso.refl (Fintype.equivFinOfCardEq h_card_eq)]
+    -- `n`-vertex induced subgraphs of `G` are `H`-free
+    apply le_extremalNumber
+    contrapose! h
+    rw [not_not] at h ⊢
+    exact h.trans ⟨SubgraphIso.induce G _⟩
+  rw [mul_comm (n.choose 2 : ℝ), Nat.cast_choose_two, ←mul_div_assoc,
+    mul_comm ((n+1).choose 2 : ℝ) _, Nat.cast_choose_two, ←mul_div_assoc,
+    div_le_div_right zero_lt_two, ←Nat.cast_pred (by positivity),
+    ←Nat.cast_pred (by positivity), mul_comm (n : ℝ) _, ←mul_assoc, ←mul_assoc,
+    show n+1-1=n from Nat.pred_succ n, mul_le_mul_right (by positivity),
+    ←Nat.cast_mul, ←Nat.cast_mul, Nat.cast_le]
+  rwa [hs₁] at hs₂
+
+/-- The limit in the **Turán density** of a simple graph `H` exists. -/
 lemma exists_tendsto_extremalNumber_div_choose_two (H : SimpleGraph V) :
     ∃ x, Filter.Tendsto
       (fun (n : ℕ) ↦ (extremalNumber (Fin n) H / n.choose 2 : ℝ))
@@ -89,87 +148,13 @@ lemma exists_tendsto_extremalNumber_div_choose_two (H : SimpleGraph V) :
   apply tendsto_atTop_ciInf
   . apply antitone_nat_of_succ_le
     intro n
-    apply succ_le (n+2)
+    apply extremalNumber_div_choose_two_succ_le (n+2)
     field_simp
-  . simp_rw [bddBelow_def, Set.mem_range,
-      forall_exists_index, forall_apply_eq_imp_iff]
+  . simp_rw [bddBelow_def, Set.mem_range, forall_exists_index,
+      forall_apply_eq_imp_iff]
     use 0
     intro n
-    exact extremalNumber_div_choose_two_nonneg (n + 2)
-where
-  extremalNumber_div_choose_two_nonneg (n : ℕ) :
-      0 ≤ (extremalNumber (Fin n) H / n.choose 2 : ℝ) := by
-    apply div_nonneg <;> exact Nat.cast_nonneg _
-  succ_le (n : ℕ) (hn : n ≥ 2) :
-      (extremalNumber (Fin (n+1)) H / (n+1).choose 2 : ℝ)
-        ≤ (extremalNumber (Fin n) H / n.choose 2 : ℝ) := by
-    have h_choose_two_pos : 0 < (n.choose 2 : ℝ) := by
-      rw [Nat.cast_pos]
-      exact Nat.choose_pos hn
-    have h_succ_choose_two_pos : 0 < ((n+1).choose 2 : ℝ) := by
-      rw [Nat.cast_pos]
-      apply Nat.choose_pos
-      apply le_of_lt
-      exact lt_of_le_of_lt hn (Nat.lt_succ_self n)
-    have h_nonneg :
-        0 ≤ (extremalNumber (Fin n) H / n.choose 2 * (n+1).choose 2 : ℝ) :=
-      mul_nonneg (extremalNumber_div_choose_two_nonneg n) (Nat.cast_nonneg _)
-    rw [div_le_iff₀ h_succ_choose_two_pos,
-      extremalNumber_le_iff_of_nonneg _ _ h_nonneg]
-    intro G _ h
-    rw [mul_comm, ←mul_div_assoc, le_div_iff₀' h_choose_two_pos]
-    -- double-counting edges and vertices
-    let s := (G.edgeFinset ×ˢ Finset.univ).filter fun (e, v) ↦ v ∉ e
-    -- counting over edges
-    have hs₁ : s.card = G.edgeFinset.card * (n-1) := by
-      simp_rw [Finset.card_filter _ _, Finset.sum_product,
-        ←Finset.card_filter _ _, Sym2.mem_coe_toFinset, Finset.filter_not,
-        Finset.filter_mem_eq_inter]
-      conv_lhs =>
-        rw [←Finset.sum_attach]
-        rhs; intro e
-        rw [Finset.univ_inter, ←Finset.compl_eq_univ_sdiff, Finset.card_compl,
-          Fintype.card_fin, Set.toFinset_card, card_mem_edgeFinset e]
-      rw [Finset.sum_const, Finset.card_attach, smul_eq_mul,
-        Nat.succ_sub_succ_eq_sub]
-    -- counting over vertices
-    have hs₂ : s.card ≤ extremalNumber (Fin n) H * (n+1) := by
-      simp_rw [Finset.card_filter _ _, Finset.sum_product_right,
-        ←Finset.card_filter, ←edgeFinset_deleteIncidenceSet, Set.toFinset_card,
-        deleteIncidenceSet_eq_restrict_compl_singleton G, ←Set.toFinset_card,
-        card_edgeFinset_restrict_eq_induce]
-      calc ∑ x, (G.induce {x}ᶜ).edgeFinset.card
-        _ ≤ ∑ _, extremalNumber (Fin n) H := by
-            apply Finset.sum_le_sum
-            intro x _
-            have h_cardEq : Fintype.card (↑{x}ᶜ : Set (Fin (n+1))) = n := by
-              rw [←Set.toFinset_card, Set.toFinset_compl,
-                Set.toFinset_singleton, Finset.card_compl,
-                Finset.card_singleton, Fintype.card_fin]
-              exact Nat.pred_succ _
-            rw [←extremalNumber_eq_of_iso
-              Iso.refl (Fintype.equivFinOfCardEq h_cardEq)]
-            -- `n`-vertex induced subgraphs of `G` are `H`-free
-            apply le_extremalNumber
-            contrapose! h
-            rw [not_not] at h ⊢
-            exact h.trans ⟨SubgraphIso.induce G _⟩
-        _ = extremalNumber (Fin n) H * (n+1) := by
-            rw [Finset.sum_const, smul_eq_mul, Finset.card_univ,
-              Fintype.card_fin, mul_comm]
-    have h_pos : 0 < n := lt_of_lt_of_le zero_lt_two hn
-    have h_cast_pos : 0 < (n : ℝ) := by
-      rw [Nat.cast_pos]
-      exact h_pos
-    have h_succ_pos : 0 < n+1 := h_pos.trans (Nat.lt_succ_self n)
-    rw [mul_comm (n.choose 2 : ℝ), Nat.cast_choose_two, ←mul_div_assoc,
-      mul_comm ((n+1).choose 2 : ℝ) _, Nat.cast_choose_two, ←mul_div_assoc,
-      div_le_div_right zero_lt_two, ←Nat.cast_pred h_pos,
-      ←Nat.cast_pred h_succ_pos, mul_comm (n : ℝ) _, ←mul_assoc, ←mul_assoc,
-      show n+1-1=n from Nat.pred_succ n, mul_le_mul_right h_cast_pos,
-      ←Nat.cast_mul, ←Nat.cast_mul, Nat.cast_le]
-    rw [←hs₁]
-    exact hs₂
+    positivity
 
 /-- The limit in the Turán density of a simple graph `H` exists. The Turán
 density of `H` is well-defined from the uniqueness of limits in `ℝ`. -/
