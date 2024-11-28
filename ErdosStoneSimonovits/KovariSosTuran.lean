@@ -12,8 +12,8 @@ namespace SimpleGraph
 variable {V : Type*} [DecidableEq V] [Fintype V]
   (α β: Type*) [Fintype α] [Fintype β]
 
-/-- Suppose `0 ≤ 2*e/n-s` and `n*(2*e/n-s)^s ≤ n^s*(t-1)`,
-then `e ≤ (t-1)^(1/s)*n^(2-1/s)/2+s*n/2`. -/
+/-- This auxiliary lemma solves the inequality `n*(2*e/n-s)^s ≤ n^s*(t-1)`
+for `e ≤ (t-1)^(1/s)*n^(2-1/s)/2+s*n/2`. -/
 private lemma le_of_pow_le_pow
     {e n s t : ℕ} (hn : n ≥ 1) (hs : s ≥ 1) (ht : t ≥ 1)
     (h_avg : 0 ≤ (2*e/n-s : ℝ)) (h : n*(2*e/n-s : ℝ)^s ≤ n^s*(t-1)) :
