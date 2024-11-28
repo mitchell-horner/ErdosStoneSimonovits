@@ -34,8 +34,8 @@ theorem extremalNumber_completeGraph
     isTuranMaximal_turanGraph hr_pos
   simp_rw [isTuranMaximal_iff_extremal_cliqueFree,
     ←completeGraph_free_iff_cliqueFree,
-    ←card_edgeFinset_eq_extremalNumber_iff] at hT
-  symm; exact hT.2
+    ←card_edgeFinset_eq_extremalNumber_iff, eq_comm] at hT
+  exact hT.2
 
 /-- The `turanGraph` is, up to isomorphism, the unique extremal graph
 forbidding the `completeGraph α`.
