@@ -13,3 +13,4 @@ scope = "leanprover-community"
 
 [[lean_lib]]
 name = "ErdosStoneSimonovits"
+globs = ["ErdosStoneSimonovits.+"]
