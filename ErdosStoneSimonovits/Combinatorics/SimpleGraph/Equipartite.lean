@@ -40,31 +40,29 @@ instance [DecidableEq α] : DecidableRel (completeEquipartiteGraph α β).Adj :=
 
 /-- The `completeEquipartiteGraph α β` contains no edges when `α` contains at most `1` element or
 `β` is empty. -/
-theorem isEmpty_completeEquipartiteGraph_edgeSet_iff :
-    IsEmpty (completeEquipartiteGraph α β).edgeSet
-      ↔ Subsingleton α ∨ IsEmpty β := by
-  rw [← not_iff_not, not_or, not_isEmpty_iff, not_subsingleton_iff_nontrivial, not_isEmpty_iff]
+lemma completeEquipartiteGraph_eq_bot_iff :
+    completeEquipartiteGraph α β = ⊥ ↔ Subsingleton α ∨ IsEmpty β := by
+  rw [← not_iff_not, not_or, ← ne_eq, ← edgeSet_nonempty,
+    not_isEmpty_iff, not_subsingleton_iff_nontrivial]
   constructor
   · intro ⟨e, he⟩
     induction' e with v w
     rw [mem_edgeSet, completeEquipartiteGraph_adj] at he
     exact ⟨⟨v.1, w.1, he⟩, ⟨v.2⟩⟩
   · intro ⟨⟨a₁, a₂, ha⟩, ⟨b⟩⟩
-    let e : (completeEquipartiteGraph α β).edgeSet := by
-      use s((a₁, b), (a₂, b))
-      rw [mem_edgeSet, completeEquipartiteGraph_adj]
-      exact ha
-    exact ⟨e⟩
+    use s((a₁, b), (a₂, b))
+    rw [mem_edgeSet, completeEquipartiteGraph_adj]
+    exact ha
 
-instance isEmpty_completeEquipartiteGraph_edgeSet_of_subsingleton
-    [Subsingleton α] : IsEmpty (completeEquipartiteGraph α β).edgeSet := by
-  rw [isEmpty_completeEquipartiteGraph_edgeSet_iff]
-  left; infer_instance
+theorem completeEquipartiteGraph_eq_bot_of_subsingleton [Subsingleton α] :
+    completeEquipartiteGraph α β = ⊥ := by
+  rw [completeEquipartiteGraph_eq_bot_iff]
+  exact Or.inl inferInstance
 
-instance isEmpty_edgeSet_completeEquipartiteGraph_of_isEmpty
-    [IsEmpty β] : IsEmpty (completeEquipartiteGraph α β).edgeSet := by
-  rw [isEmpty_completeEquipartiteGraph_edgeSet_iff]
-  right; infer_instance
+theorem completeEquipartiteGraph_eq_bot_of_isEmpty [IsEmpty β] :
+    completeEquipartiteGraph α β = ⊥ := by
+  rw [completeEquipartiteGraph_eq_bot_iff]
+  exact Or.inr inferInstance
 
 theorem neighborSet_completeEquipartiteGraph (v : α × β) :
     (completeEquipartiteGraph α β).neighborSet v = {v.1}ᶜ ×ˢ Set.univ := by
