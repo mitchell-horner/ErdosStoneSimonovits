@@ -37,7 +37,7 @@ instance : FunLike (Copy A B) α β where
 
 /-- A copy induces an embedding of edge sets. -/
 def mapEdgeSet (f : Copy A B) : A.edgeSet ↪ B.edgeSet where
-  toFun := Hom.mapEdgeSet f.toHom
+  toFun := f.toHom.mapEdgeSet
   inj' := Hom.mapEdgeSet.injective f.toHom f.injective
 
 /-- A copy induces an embedding of neighbor sets. -/
@@ -74,7 +74,7 @@ theorem coe_comp (g : Copy B C) (f : Copy A B) : ⇑(g.comp f) = g ∘ f := by e
 
 @[simp, norm_cast] lemma coe_ofLE (h : G₁ ≤ G₂) : ⇑(ofLE G₁ G₂ h) = _root_.id := rfl
 
-@[simp] theorem ofLE_refl : ofLE G G (le_refl G) = id G := by ext; simp
+@[simp] theorem ofLE_refl : ofLE G G le_rfl = id G := by ext; simp
 
 @[simp]
 theorem ofLE_comp (h₁₂ : G₁ ≤ G₂) (h₂₃ : G₂ ≤ G₃) :
