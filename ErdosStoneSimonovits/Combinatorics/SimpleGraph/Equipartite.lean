@@ -116,7 +116,7 @@ theorem isContained_completeEquipartiteGraph_of_colorable [Fintype V]
   use univ.sup fun c ↦ card (C.colorClass c)
   intro β _ hcardβ
   haveI (c) : Nonempty (C.colorClass c ↪ β) := Function.Embedding.nonempty_of_card_le <|
-      hcardβ.trans' <| le_sup (f := fun c ↦ card (C.colorClass c)) (mem_univ c)
+      hcardβ.trans' <| @le_sup _ _ _ _ _ (fun c ↦ card (C.colorClass c)) c (mem_univ c)
   have ι (c) := Classical.arbitrary (C.colorClass c ↪ β)
   have hι_ceq {c₁ c₂} {v} {w} (hc_eq : c₁ = c₂) (hι_eq : ι c₁ v = ι c₂ w) : v.val = w.val := by
     let v' : C.colorClass c₂ := by
