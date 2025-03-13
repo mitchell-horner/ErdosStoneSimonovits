@@ -21,8 +21,9 @@ variable [Fintype β] [DecidableRel B.Adj]
 
 /-- If `B` is `A`-free, then `B` has at most `extremalNumber β A` edges. -/
 theorem le_extremalNumber (h : A.Free B) : #B.edgeFinset ≤ extremalNumber β A := by
-  convert le_sup <| mem_filter.mpr ⟨mem_univ B, h⟩
-  convert rfl
+  rw [extremalNumber]
+  convert @le_sup _ _ _ _ { B' : SimpleGraph β | A.Free B' }
+    (#·.edgeFinset) B (mem_filter.mpr ⟨mem_univ B, h⟩)
 
 /-- If `B` has more than `extremalNumber β A` edges, then `B` contains a copy of `A`. -/
 theorem extremalNumber_lt (h : extremalNumber β A < #B.edgeFinset) : A.IsContained B := by
