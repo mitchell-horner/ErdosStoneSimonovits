@@ -214,8 +214,8 @@ theorem completeEquipartiteGraph_isContained_of_minDegree {ε : ℝ} (hε : 0 < 
           → completeEquipartiteGraph (Fin (r+1)) (Fin t) ⊑ G := by
   rcases show r = 0 ∨ t = 0 ∨ r ≠ 0 ∧ t ≠ 0 by tauto with hr | ht | ⟨hr, ht⟩
   · use t; intro _ _ _ h_card _ _ _
-    rw [hr, zero_add, completeEquipartiteGraph_eq_bot_of_subsingleton]
-    apply bot_isContained_of_card_le
+    rw [hr, zero_add, completeEquipartiteGraph_eq_bot_of_subsingleton,
+      bot_isContained_iff_card_le]
     simpa using h_card.le
   · use 0; intros
     rw [ht]
@@ -253,8 +253,8 @@ theorem completeEquipartiteGraph_isContained_of_minDegree {ε : ℝ} (hε : 0 < 
     -- find `completeEquipartiteGraph` from inductive hypothesis
     replace ih : completeEquipartiteGraph (Fin r) (Fin t') ⊑ G := by
       rcases eq_or_ne r 1 with hr_eq_1 | hr_ne_1
-      · rw [hr_eq_1, completeEquipartiteGraph_eq_bot_of_subsingleton]
-        apply bot_isContained_of_card_le
+      · rw [hr_eq_1, completeEquipartiteGraph_eq_bot_of_subsingleton,
+          bot_isContained_iff_card_le]
         simp_rw [card_prod, Fintype.card_fin, one_mul]
         apply h_cardV.le.trans'
         exact_mod_cast calc (t' : ℝ)
