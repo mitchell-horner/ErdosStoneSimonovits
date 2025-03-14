@@ -60,7 +60,7 @@ def toEmbedding (f : Copy A B) : α ↪ β := ⟨f, f.injective⟩
 def comp (g : Copy B C) (f : Copy A B) : Copy A C := by
   use g.toHom.comp f.toHom
   rw [Hom.coe_comp]
-  exact Function.Injective.comp g.injective f.injective
+  exact g.injective.comp f.injective
 
 @[simp]
 theorem comp_apply (g : Copy B C) (f : Copy A B) (a : α) : g.comp f a = g (f a) :=
@@ -81,14 +81,13 @@ theorem ofLE_comp (h₁₂ : G₁ ≤ G₂) (h₂₃ : G₂ ≤ G₃) :
   (ofLE _ _ h₂₃).comp (ofLE _ _ h₁₂) = ofLE _ _ (h₁₂.trans h₂₃) := by ext; simp
 
 /-- The copy from an induced subgraph to the initial simple graph. -/
-def induce (G : SimpleGraph V) (s : Set V) : Copy (G.induce s) G :=
-  (Embedding.induce s).toCopy
+def induce (G : SimpleGraph V) (s : Set V) : Copy (G.induce s) G := (Embedding.induce s).toCopy
+
 
 end Copy
 
 /-- A `Subgraph G` gives rise to a copy from the coercion to `G`. -/
-def Subgraph.coeCopy (G' : G.Subgraph) : Copy G'.coe G :=
-  G'.hom.toCopy Subgraph.hom.injective
+def Subgraph.coeCopy (G' : G.Subgraph) : Copy G'.coe G := G'.hom.toCopy Subgraph.hom.injective
 
 end Copy
 
