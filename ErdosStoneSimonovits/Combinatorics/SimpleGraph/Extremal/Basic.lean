@@ -13,6 +13,7 @@ section ExtremalNumber
 open Classical in
 /-- The extremal number of a finite type `β` and a simple graph `A` is the the maximum number of
 edges in a `A`-free simple graph on the vertex type `β`.
+
 If `A` is contained in all simple graphs on the vertex type `β`, then this is `0`. -/
 noncomputable def extremalNumber (β : Type*) [Fintype β] (A : SimpleGraph α) : ℕ :=
   sup { B : SimpleGraph β | A.Free B } (#·.edgeFinset)
@@ -21,12 +22,11 @@ variable [Fintype β] [DecidableRel B.Adj]
 
 /-- If `B` is `A`-free, then `B` has at most `extremalNumber β A` edges. -/
 theorem le_extremalNumber (h : A.Free B) : #B.edgeFinset ≤ extremalNumber β A := by
-  rw [extremalNumber]
   convert @le_sup _ _ _ _ { B' : SimpleGraph β | A.Free B' }
     (#·.edgeFinset) B (mem_filter.mpr ⟨mem_univ B, h⟩)
 
 /-- If `B` has more than `extremalNumber β A` edges, then `B` contains a copy of `A`. -/
-theorem extremalNumber_lt (h : extremalNumber β A < #B.edgeFinset) : A.IsContained B := by
+theorem extremalNumber_lt (h : extremalNumber β A < #B.edgeFinset) : A ⊑ B := by
   contrapose! h
   exact le_extremalNumber h
 
@@ -39,7 +39,7 @@ theorem extremalNumber_le_iff (β : Type*) [Fintype β] (A : SimpleGraph α) (x 
   exact ⟨fun h B _ hB ↦ by convert h B hB, fun h B hB ↦ by convert h B hB⟩
 
 /-- `extremalNumber β A` is greater than `x` if and only if there exists a `A`-free simple graph `B`
-with greater than `x` edges. -/
+with more than `x` edges. -/
 theorem lt_extremalNumber_iff (β : Type*) [Fintype β] (A : SimpleGraph α) (x : ℕ) :
     x < extremalNumber β A ↔
       ∃ B : SimpleGraph β, ∃ _ : DecidableRel B.Adj, A.Free B ∧ x < #B.edgeFinset := by
@@ -65,7 +65,7 @@ theorem lt_extremalNumber_iff_of_nonneg
   exact lt_extremalNumber_iff β A ⌊x⌋₊
 
 /-- If `C` contains a copy of `A`, then `extremalNumber β A` is at most `extremalNumber β C`. -/
-theorem extremalNumber_of_isContained (h : A.IsContained C) :
+theorem extremalNumber_of_isContained (h : A ⊑ C) :
     extremalNumber β A ≤ extremalNumber β C := by
   rw [extremalNumber_le_iff]
   intro B _ h'
@@ -90,8 +90,7 @@ theorem extremalNumber_congr
     apply le_extremalNumber
     contrapose! h
     rw [not_not] at h ⊢
-    apply IsContained.trans' ⟨(Iso.map e B).symm.toCopy⟩
-    exact h.trans' ⟨φ.toCopy⟩
+    exact (h.trans' ⟨φ.toCopy⟩).trans ⟨(Iso.map e B).symm.toCopy⟩
 
 end ExtremalNumber
 
@@ -104,22 +103,21 @@ def IsExtremal [Fintype V] (G : SimpleGraph V) [DecidableRel G.Adj] (p : SimpleG
 
 open Classical in
 /-- If one simple graph satisfies `p`, then there exists an extremal graph satisfying `p`. -/
-theorem exists_isExtremal_of_exists
-    [Fintype V] (p : SimpleGraph V → Prop) [DecidablePred p] (hp : ∃ G, p G) :
-    ∃ G : SimpleGraph V, ∃ _ : DecidableRel G.Adj, G.IsExtremal p := by
-  obtain ⟨G, hp', h⟩ := by
+theorem exists_isExtremal_iff_exists
+    [Fintype V] (p : SimpleGraph V → Prop) [DecidablePred p] :
+    (∃ G : SimpleGraph V, ∃ _ : DecidableRel G.Adj, G.IsExtremal p) ↔ ∃ G', p G' := by
+  refine ⟨fun ⟨G, _, hp⟩ ↦ ⟨G, hp.1⟩, fun ⟨G', hp'⟩ ↦ ?_⟩
+  obtain ⟨G, hp, h⟩ := by
     apply exists_max_image { G | p G } (#·.edgeFinset)
-    use hp.choose
-    simpa using hp.choose_spec
+    use G', by simpa using hp'
   use G, inferInstanceAs (DecidableRel G.Adj)
-  exact ⟨by simpa using hp',
-    fun H _ hp' ↦ by convert h H <| mem_filter.mpr ⟨mem_univ H, hp'⟩⟩
+  exact ⟨by simpa using hp, fun H _ hp' ↦ by convert h H <| mem_filter.mpr ⟨mem_univ H, hp'⟩⟩
 
 open Classical in
-/-- If `A` has one edge, then exist an `A`-free extremal graph. -/
-theorem exists_isExtremal_of_free [Fintype β] (h : A ≠ ⊥) :
+/-- If `A` has one edge, then exist an `A.Free` extremal graph. -/
+theorem exists_isExtremal_free [Fintype β] (h : A ≠ ⊥) :
     ∃ B : SimpleGraph β, ∃ _ : DecidableRel B.Adj, B.IsExtremal A.Free :=
-  exists_isExtremal_of_exists A.Free ⟨⊥, free_bot h⟩
+  (exists_isExtremal_iff_exists A.Free).mpr ⟨⊥, free_bot h⟩
 
 /-- `A`-free extremal graphs are `A`-free simple graphs having `extremalNumber β A` many edges. -/
 theorem isExtremal_free_iff [Fintype β] [DecidableRel B.Adj] :
