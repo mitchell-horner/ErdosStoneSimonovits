@@ -6,47 +6,42 @@ namespace SimpleGraph
 
 open Finset Fintype
 
-variable {V : Type*} (G : SimpleGraph V)
+variable {V : Type*} {G : SimpleGraph V} (n : ℕ) (α : Type*) [Fintype α]
 
-/-- A simple graph does not contain `⊤ : SimpleGraph (Fin n)` if and only if it
-has no `n`-cliques. -/
-theorem completeGraph_free_iff_cliqueFree {n : ℕ} :
-    (⊤ : SimpleGraph (Fin n)).Free G ↔ G.CliqueFree n := by
-  rw [← not_iff_not, not_free, cliqueFree_iff, not_isEmpty_iff]
-  refine ⟨fun ⟨f⟩ ↦ ⟨⟨f, f.injective⟩, ⟨?_, f.toHom.map_adj⟩⟩, fun ⟨f⟩ ↦ ⟨f, f.injective⟩⟩
+/-- A simple graph does not contain `⊤` on `n` vertices if and only if it has no `n`-cliques. -/
+theorem top_free_iff_cliqueFree :
+    (⊤ : SimpleGraph α).Free G ↔ G.CliqueFree (card α) := by
+  rw [← not_iff_not, not_free, cliqueFree_iff, not_isEmpty_iff,
+    isContained_congr (Iso.completeGraph (Fintype.equivFin α)) Iso.refl]
+  refine ⟨fun ⟨f⟩ ↦ ⟨f.toEmbedding, ⟨?_, f.toHom.map_adj⟩⟩, fun ⟨f⟩ ↦ ⟨f.toCopy⟩⟩
   simpa [← f.injective.ne_iff] using G.ne_of_adj
 
-variable [Fintype V] [DecidableRel G.Adj]
+variable [Fintype V] [DecidableRel G.Adj] [Nontrivial α]
 
-lemma isTuranMaximal_iff_isExtremal_completeGraph_free {r} :
-    G.IsTuranMaximal r ↔ G.IsExtremal (⊤ : SimpleGraph (Fin (r+1))).Free := by
-  simp_rw [IsTuranMaximal, IsExtremal, completeGraph_free_iff_cliqueFree]
+lemma isExtremal_top_free_iff_isTuranMaximal :
+    G.IsExtremal (⊤ : SimpleGraph α).Free ↔ G.IsTuranMaximal (card α-1) := by
+  simp_rw [IsTuranMaximal, IsExtremal,
+    Nat.sub_one_add_one Fintype.card_ne_zero, top_free_iff_cliqueFree]
+
+lemma isExtremal_top_free_turanGraph :
+    (turanGraph n (card α-1)).IsExtremal (⊤ : SimpleGraph α).Free := by
+    rw [isExtremal_top_free_iff_isTuranMaximal]
+    exact isTuranMaximal_turanGraph (Nat.sub_pos_iff_lt.mpr Fintype.one_lt_card)
 
 /-- The extremal numbers of `⊤` are equal to the number of edges in `turanGraph`.
 
 This is a corollary of **Turán's theorem**. See `SimpleGraph.isTuranMaximal_turanGraph`. -/
-theorem extremalNumber_completeGraph
-    (β α : Type*) [Fintype β] [DecidableEq β] [Fintype α] [Nontrivial α] :
-    extremalNumber β (⊤ : SimpleGraph α) = #(turanGraph (card β) (card α-1)).edgeFinset := by
-  have h : (turanGraph (card β) (card α-1)).IsTuranMaximal (card α-1) :=
-    isTuranMaximal_turanGraph (Nat.sub_pos_iff_lt.mpr one_lt_card)
-  have e : (⊤ : SimpleGraph α) ≃g (⊤ : SimpleGraph (Fin (card α-1+1))) :=
-    Iso.completeGraph <| equivFinOfCardEq (Nat.sub_one_add_one card_ne_zero).symm
-  simp_rw [isTuranMaximal_iff_isExtremal_completeGraph_free, isExtremal_free_iff,
-    ← extremalNumber_congr (equivFin β) e] at h
+theorem extremalNumber_top (α : Type*) [Fintype α] [Nontrivial α] :
+    extremalNumber n (⊤ : SimpleGraph α) = #(turanGraph n (card α-1)).edgeFinset := by
+  have h := isExtremal_top_free_turanGraph n α
+  rw [isExtremal_free_iff, Fintype.card_fin] at h
   exact h.2.symm
 
-variable [DecidableEq V]
-
-/-- The `turanGraph` is, up to isomorphism, the unique extremal graph forbidding `completeGraph`.
+/-- The `turanGraph` is, up to isomorphism, the unique extremal graph forbidding `⊤`.
 
 This is **Turán's theorem**. See `SimpleGraph.isTuranMaximal_iff_nonempty_iso_turanGraph`. -/
-theorem card_edgeFinset_eq_extremalNumber_completeGraph_iff_iso_turanGraph
-    (α : Type*) [Fintype α] [Nontrivial α] :
-    (⊤ : SimpleGraph α).Free G ∧ #G.edgeFinset = extremalNumber V (⊤ : SimpleGraph α)
+theorem card_edgeFinset_eq_extremalNumber_top_iff_iso_turanGraph :
+    (⊤ : SimpleGraph α).Free G ∧ #G.edgeFinset = extremalNumber (card V) (⊤ : SimpleGraph α)
       ↔ Nonempty (G ≃g turanGraph (card V) (card α-1)) := by
-  have e : (⊤ : SimpleGraph α) ≃g (⊤ : SimpleGraph (Fin (card α-1+1))) :=
-    Iso.completeGraph <| equivFinOfCardEq (Nat.sub_one_add_one card_ne_zero).symm
-  simp_rw [← isTuranMaximal_iff_nonempty_iso_turanGraph (Nat.sub_pos_iff_lt.mpr one_lt_card),
-    isTuranMaximal_iff_isExtremal_completeGraph_free, isExtremal_free_iff,
-    ← free_congr e.symm, extremalNumber_congr (Equiv.refl V) e]
+  rw [← isTuranMaximal_iff_nonempty_iso_turanGraph (Nat.sub_pos_iff_lt.mpr one_lt_card),
+    ← isExtremal_top_free_iff_isTuranMaximal, isExtremal_free_iff]
