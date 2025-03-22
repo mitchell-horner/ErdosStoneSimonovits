@@ -11,20 +11,18 @@ variable {V W : Type*} {G : SimpleGraph V} {H : SimpleGraph W}
 section TuranDensity
 
 /-- If `G` is `H.Free`, then `G.deleteIncidenceSet v` is also `H.Free` and has at most
-`extremalNumber { x // x ≠ v } H` many edges. -/
+`extremalNumber (card V-1) H` many edges. -/
 theorem card_deleteIncidenceSet_le_extremalNumber_of_free
     [Fintype V] [DecidableRel G.Adj] [DecidableEq V] (h : H.Free G) (v : V) :
     #(G.deleteIncidenceSet v).edgeFinset ≤ extremalNumber (card V-1) H := by
-  rw [← card_edgeFinset_induce_compl_singleton,
-    ← @card_unique ({v} : Set V), ← card_compl_set]
+  rw [← card_edgeFinset_induce_compl_singleton, ← @card_unique ({v} : Set V), ← card_compl_set]
   apply le_extremalNumber
   contrapose! h
   rw [not_free] at h ⊢
   exact h.trans ⟨Copy.induce G {v}ᶜ⟩
 
 lemma extremalNumber_div_choose_two_succ_le {n : ℕ} (hn : 2 ≤ n) :
-    (extremalNumber (n+1) H / (n+1).choose 2 : ℝ)
-      ≤ (extremalNumber n H / n.choose 2 : ℝ) := by
+    (extremalNumber (n+1) H / (n+1).choose 2 : ℝ) ≤ (extremalNumber n H / n.choose 2 : ℝ) := by
   conv_lhs =>
     enter [1, 1, 1]
     rw [← Fintype.card_fin (n+1)]
@@ -75,8 +73,8 @@ lemma exists_tendsto_extremalNumber_div_choose_two (H : SimpleGraph V) :
     rw [← hn]
     positivity
 
-/-- The **Turán density** of a simple graph `H` is the limit of
-`extremalNumber n H / n.choose 2` as `n` approaches `∞`.
+/-- The **Turán density** of a simple graph `H` is the limit of `extremalNumber n H / n.choose 2`
+as `n` approaches `∞`.
 
 See `SimpleGraph.tendsto_turanDensity` for proof of existence. -/
 noncomputable def turanDensity (H : SimpleGraph V) :=
