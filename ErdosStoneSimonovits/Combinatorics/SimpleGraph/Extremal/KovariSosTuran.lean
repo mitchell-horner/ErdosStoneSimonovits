@@ -116,7 +116,7 @@ private lemma le_card_aux [Nonempty V] [Nonempty α]
 
 /-- If the average degree of vertices in `G` is at least `card α-1` and `G` is
 `(completeBipartiteGraph α β).Free`, then `G` has at most
-`(card β-1)^(1/card α : ℝ)*(card V)^(2-1/card α : ℝ)/2 + (card α-1)*(card V)/2` edges.
+`(card β-1)^(1/card α)*(card V)^(2-1/card α)/2 + (card α-1)*(card V)/2` edges.
 
 This is an auxiliary definition for the **Kővári–Sós–Turán theorem**. -/
 private lemma card_edgeFinset_le_of_aux [Nonempty V] [Nonempty α] [Nonempty β]
