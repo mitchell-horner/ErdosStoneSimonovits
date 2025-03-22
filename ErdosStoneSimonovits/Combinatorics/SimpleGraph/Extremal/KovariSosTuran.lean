@@ -203,7 +203,7 @@ end KovariSosTuran
 
 This is the corollary of the **Kővári–Sós–Turán theorem** for extremal numbers. -/
 theorem extremalNumber_completeBipartiteGraph_le [Nonempty α] (hcard_le : card α ≤ card β) :
-  extremalNumber V (completeBipartiteGraph α β)
+  extremalNumber (card V) (completeBipartiteGraph α β)
     ≤ ((card β-1)^(1/card α : ℝ)*(card V)^(2-1/card α : ℝ)/2 + (card α-1)*(card V)/2 : ℝ) := by
   haveI : Nonempty β := by
     rw [← card_pos_iff]
@@ -218,7 +218,7 @@ theorem extremalNumber_completeBipartiteGraph_le [Nonempty α] (hcard_le : card 
     · apply div_nonneg _ zero_le_two
       apply mul_nonneg _ (by positivity)
       exact sub_nonneg_of_le (mod_cast Nat.succ_le_of_lt card_pos)
-  rw [extremalNumber_le_iff_of_nonneg V (completeBipartiteGraph α β) h_nonneg]
+  rw [extremalNumber_le_iff_of_nonneg (completeBipartiteGraph α β) h_nonneg]
   intro G _ h_free
   exact card_edgeFinset_le_of_completeBipartiteGraph_free hcard_le h_free
 

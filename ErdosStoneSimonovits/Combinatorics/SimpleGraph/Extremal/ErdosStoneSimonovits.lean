@@ -504,7 +504,7 @@ omit [Fintype W] in
 lemma lt_extremalNumber_of_not_colorable {ε : ℝ} (hε : 0 < ε)
     {r : ℕ} (hr : 0 < r) (nhc : ¬H.Colorable r) :
     ∃ n, ∀ {V : Type*} [Fintype V] [DecidableEq V], n < card V →
-      (1-1/r-ε)*(card V)^2/2 < extremalNumber V H := by
+      (1-1/r-ε)*(card V)^2/2 < extremalNumber (card V) H := by
   use ⌈2*r/ε⌉₊
   intro V _ _ h_cardV
   haveI : Nonempty V := by
@@ -535,11 +535,11 @@ lemma lt_extremalNumber_of_not_colorable {ε : ℝ} (hε : 0 < ε)
 lemma extremalNumber_le_of_colorable {ε : ℝ} (hε : 0 < ε)
     {r : ℕ} (hc : H.Colorable (r+1)) :
     ∃ n, ∀ {V : Type*} [Fintype V] [DecidableEq V], n < card V →
-      extremalNumber V H ≤ (1-1/r+ε)*(card V)^2/2 := by
+      extremalNumber (card V) H ≤ (1-1/r+ε)*(card V)^2/2 := by
   have ⟨t, h_isContained_lhs⟩ := isContained_completeEquipartiteGraph_of_colorable hc
   have ⟨n, h_isContained_rhs⟩ := completeEquipartiteGraph_isContained_of_card_edgeFinset hε r t
   use n; intro V _ _ h_cardV
-  trans (extremalNumber V (completeEquipartiteGraph (Fin (r+1)) (Fin t)) : ℝ)
+  trans (extremalNumber (card V) (completeEquipartiteGraph (Fin (r+1)) (Fin t)) : ℝ)
   -- `completeEquipartiteGraph` contains `H`
   · exact_mod_cast extremalNumber_of_isContained <| h_isContained_lhs (Fintype.card_fin t).ge
   -- `G` contains `completeEquipartiteGraph`
@@ -547,7 +547,7 @@ lemma extremalNumber_le_of_colorable {ε : ℝ} (hε : 0 < ε)
       apply div_nonneg _ zero_le_two
       apply mul_nonneg _ (by positivity)
       exact add_nonneg (Nat.one_sub_one_div_cast_nonneg r) hε.le
-    rw [extremalNumber_le_iff_of_nonneg V _ h]
+    rw [extremalNumber_le_iff_of_nonneg _ h]
     intro _ _ h
     contrapose! h
     rw [not_free]
@@ -560,8 +560,8 @@ This is the **Erdős-Stone-Simonovits theorem**. -/
 theorem lt_extremalNumber_le_of_chromaticNumber {ε : ℝ} (hε : 0 < ε)
     {r : ℕ} (hr : 0 < r) (hχ : H.chromaticNumber = r+1) :
     ∃ n, ∀ {V : Type*} [Fintype V] [DecidableEq V], n < card V →
-      (1-1/r-ε)*(card V)^2/2 < extremalNumber V H ∧
-      extremalNumber V H ≤ (1-1/r+ε)*(card V)^2/2 := by
+      (1-1/r-ε)*(card V)^2/2 < extremalNumber (card V) H ∧
+      extremalNumber (card V) H ≤ (1-1/r+ε)*(card V)^2/2 := by
   have ⟨hc, nhc⟩ := chromaticNumber_eq_iff_colorable_not_colorable.mp hχ
   have ⟨n₁, h₁⟩ := lt_extremalNumber_of_not_colorable hε hr nhc
   have ⟨n₂, h₂⟩ := extremalNumber_le_of_colorable hε hc
@@ -576,7 +576,7 @@ to `(1-1/r+o(1))*n^2/2`.
 This is a corollary of the **Erdős-Stone-Simonovits theorem**. -/
 theorem isLittleO_extremalNumber_of_chromaticNumber
     {r : ℕ} (hr : 0 < r) (hχ : H.chromaticNumber = r+1) :
-    (fun (n : ℕ) ↦ (extremalNumber (Fin n) H-(1-1/r)*n^2/2 : ℝ))
+    (fun (n : ℕ) ↦ (extremalNumber n H-(1-1/r)*n^2/2 : ℝ))
       =o[atTop] (fun (n : ℕ) ↦ (n^2 : ℝ)) := by
   rw [isLittleO_iff]
   intro ε hε
@@ -591,12 +591,12 @@ theorem isLittleO_extremalNumber_of_chromaticNumber
   all_goals linarith
 
 /-- If the chromatic number of `H` equals `r+1 > 0`, then the limit
-`extremalNumber (Fin n) H / n.choose 2` approaches `1-1/r` as `n → ∞`.
+`extremalNumber n H / n.choose 2` approaches `1-1/r` as `n → ∞`.
 
 This is a corollary of the **Erdős-Stone-Simonovits theorem**. -/
 theorem tendsto_extremalNumber_div_choose_two_of_chromaticNumber
     {r : ℕ} (hr : 0 < r) (hχ : H.chromaticNumber = r+1) :
-    Tendsto (fun (n : ℕ) ↦ (extremalNumber (Fin n) H / n.choose 2 : ℝ)) atTop (𝓝 (1-1/r)) := by
+    Tendsto (fun (n : ℕ) ↦ (extremalNumber n H / n.choose 2 : ℝ)) atTop (𝓝 (1-1/r)) := by
   have hz : ∀ᶠ (n : ℕ) in atTop, (n.choose 2 : ℝ) ≠ 0 := by
     rw [eventually_atTop]
     use 2; intro n hn
@@ -616,13 +616,13 @@ theorem turanDensity_eq_of_chromaticNumber
     {r : ℕ} (hr : 0 < r) (hχ : H.chromaticNumber = r+1) : turanDensity H = 1-1/r :=
   Tendsto.limUnder_eq (tendsto_extremalNumber_div_choose_two_of_chromaticNumber hr hχ)
 
-/-- If the chromatic number of `H` equals `r+1 > 1`, then `extremalNumber (Fin n) H` is
+/-- If the chromatic number of `H` equals `r+1 > 1`, then `extremalNumber n H` is
 asymptotically equivalent to `(1-1/r)*(n.choose 2)` as `n → ∞`
 
 This is a corollary of the **Erdős-Stone-Simonovits theorem**. -/
 theorem isEquivalent_extremalNumber_of_chromaticNumber
     {r : ℕ} (hr : 1 < r) (hχ : H.chromaticNumber = r+1) :
-    (fun (n : ℕ) ↦ (extremalNumber (Fin n) H : ℝ))
+    (fun (n : ℕ) ↦ (extremalNumber n H : ℝ))
       ~[atTop] (fun (n : ℕ) ↦ ((1-1/r)*(n.choose 2) : ℝ)) := by
   have hπ_eq : turanDensity H = 1-1/r := turanDensity_eq_of_chromaticNumber (by positivity) hχ
   have hπ_pos : 0 < turanDensity H := by
