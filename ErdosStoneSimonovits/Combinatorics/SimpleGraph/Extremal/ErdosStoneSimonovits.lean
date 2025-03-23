@@ -223,16 +223,17 @@ theorem completeEquipartiteGraph_isContained_of_minDegree {ε : ℝ} (hε : 0 < 
     let ε' := 1/(↑(r-1)*r) + ε
     have hε' : 0 < ε' := by positivity
     -- choose `t'` larger than `t/(r*ε)`
-    let t' := ⌈t/(r*ε)⌉₊ + 1
+    let t' := ⌊t/(r*ε)⌋₊ + 1
     have ht_lt_t'rε : t < t'*r*ε := by
-      rw [mul_assoc, ← div_lt_iff₀ (by positivity)]
-      exact (Nat.le_ceil (t/(r*ε))).trans_lt (mod_cast lt_add_one ⌈t/(r*ε)⌉₊)
+      rw [mul_assoc, ← div_lt_iff₀ (by positivity), Nat.cast_add_one]
+      exact Nat.lt_floor_add_one (t/(r*ε))
     have ht' : 0 < t' := by positivity
     haveI : NeZero t' := ⟨ht'.ne'⟩
     have ⟨n', ih⟩ := completeEquipartiteGraph_isContained_of_minDegree hε' (r-1) t'
     -- choose `n` at least `((t'.choose t)^r*t+r*t')*(t'-t)/(t'*r*ε-t)` for pigeonhole principle
     let n := max n' ⌈((t'.choose t)^r*t+r*t')*(t'-t)/(t'*r*ε-t)⌉₊
-    use n; intro V _ _ h_cardV G _ hδ
+    use n
+    intro V _ _ h_cardV G _ hδ
     haveI : Nonempty V := card_pos_iff.mp (n.zero_le.trans_lt h_cardV)
     -- `r` is less than `1/ε` otherwise δ(G) = v(G)
     have hrε_lt_1 : r*ε < 1 := by
@@ -291,11 +292,11 @@ private lemma exists_induced_subgraph_for_minDegree {c : ℝ} (hc₀ : 0 ≤ c) 
     ∃ s : Finset V, (s : Set V) ⊆ G.support ∧
       c*#s ≤ (G.induce s).minDegree ∧
       #(G.induce s).edgeFinset ≥ #G.edgeFinset
-        -c*(card G.support^2-#s^2)/2-(card G.support-#s)/2 := by
+        -c*(card G.support^2-#s^2)/2-c*(card G.support-#s)/2 := by
   by_cases hδ : c*#G.support.toFinset ≤ (G.induce G.support.toFinset).minDegree
   · refine ⟨G.support.toFinset, by simp, hδ, ?_⟩
     suffices h_card_edges : #(G.induce G.support).edgeFinset ≥ #G.edgeFinset
-        -c*(card G.support^2-#G.support.toFinset^2)/2-(card G.support-#G.support.toFinset)/2 by
+        -c*(card G.support^2-#G.support.toFinset^2)/2-c*(card G.support-#G.support.toFinset)/2 by
       convert h_card_edges
       all_goals simp
     rw [card_edgeFinset_induce_support, ← Set.toFinset_card G.support]
@@ -320,15 +321,15 @@ private lemma exists_induced_subgraph_for_minDegree {c : ℝ} (hc₀ : 0 ≤ c) 
     have ihδ : c*#s ≤ (G.induce s).minDegree := by
       simpa [← deleteIncidenceSet_induce_of_not_mem G hx_not_mem] using ihδ'
     have ih_card_edges : #(G.induce s).edgeFinset ≥ #G'.edgeFinset
-        -c*((card G'.support)^2-#s^2)/2-((card G'.support)-#s)/2 := by
+        -c*((card G'.support)^2-#s^2)/2-c*((card G'.support)-#s)/2 := by
       simpa [sub_sub, Set.toFinset_card,
         ← G.deleteIncidenceSet_induce_of_not_mem hx_not_mem] using ih_card_edges'
     refine ⟨s, hs, ihδ, ?_⟩
     calc (#(G.induce s).edgeFinset : ℝ)
-      _ ≥ #G'.edgeFinset-(c*((card G'.support)^2-#s^2)/2+(card G'.support-#s)/2) := by
+      _ ≥ #G'.edgeFinset-(c*((card G'.support)^2-#s^2)/2+c*(card G'.support-#s)/2) := by
           rwa [sub_sub] at ih_card_edges
       _ ≥ (#G.edgeFinset-c*(card G.support))
-            -(c*((card G.support-1)^2-#s^2)/2+(card G.support-1-#s)/2) := by
+            -(c*((card G.support-1)^2-#s^2)/2+c*(card G.support-1-#s)/2) := by
           apply sub_le_sub
           -- exactly `G.minDegree` edges are deleted from the edge set
           · rw [G.card_edgeFinset_deleteIncidenceSet ↑x,
@@ -343,21 +344,22 @@ private lemma exists_induced_subgraph_for_minDegree {c : ℝ} (hc₀ : 0 ≤ c) 
               apply pow_le_pow_left₀ (Nat.cast_nonneg (card G'.support))
               rw [← Nat.cast_pred card_pos]
               exact_mod_cast G.card_support_deleteIncidenceSet x.prop
-            · rw [sub_le_sub_iff_right, ← Nat.cast_pred card_pos]
+            · apply mul_le_mul_of_nonneg_left _ hc₀
+              rw [sub_le_sub_iff_right, ← Nat.cast_pred card_pos]
               exact_mod_cast G.card_support_deleteIncidenceSet x.prop
-      _ ≥ #G.edgeFinset-c*((card G.support)^2-#s^2)/2-(card G.support-#s)/2 := by linarith
+      _ ≥ #G.edgeFinset-c*((card G.support)^2-#s^2)/2-c*(card G.support-#s)/2 := by linarith
 termination_by card G.support
 decreasing_by
   exact (G.card_support_deleteIncidenceSet x.prop).trans_lt
     (Nat.pred_lt_of_lt h_card_support_pos)
 
 /-- Repeatedly remove minimal degree vertices until `(G.induce s).minDegree` is
-at least `c*#s` and `#s ≈ √ε * (card V)`.
+at least `c*#s` and `#s ≈ √ε * (card V)` when `c ≈ 0`.
 
 This is an auxiliary definition for the **Erdős-Stone theorem**. -/
 private lemma exists_induced_subgraph_for_minDegree_for_card_sq
     {c ε : ℝ} (hc₀ : 0 ≤ c) (hε : 0 ≤ ε) (h : #G.edgeFinset ≥ (c+ε)*(card V)^2/2) :
-    ∃ s : Finset V, c*#s ≤ (G.induce s).minDegree ∧ ε*(card V)^2-(card V) ≤ #s^2 := by
+    ∃ s : Finset V, c*#s ≤ (G.induce s).minDegree ∧ ε*(card V)^2-c*(card V) ≤ #s^2 := by
   rcases isEmpty_or_nonempty V
   · use ∅
     simp
@@ -381,26 +383,28 @@ private lemma exists_induced_subgraph_for_minDegree_for_card_sq
     rw [ge_iff_le, sub_sub, sub_le_iff_le_add] at hs
     use s, hδ
     rw [← div_le_div_iff_of_pos_right zero_lt_two, sub_div]
-    calc ε*(card V)^2/2-(card V)/2
-      _ = (c+ε)*(card V)^2/2 -(c*(card V)^2/2 + (card V)/2) := by ring_nf
-      _ ≤ (#s*(#s-1)/2 + (c*((card G.support)^2 - #s^2)/2+(card G.support-#s)/2))
-            -(c*(card V)^2/2+card V/2) := by
+    calc ε*(card V)^2/2-c*(card V)/2
+      _ = (c+ε)*(card V)^2/2-(c*(card V)^2/2+c*(card V)/2) := by ring_nf
+      _ ≤ (#s*(#s-1)/2+(c*((card G.support)^2-#s^2)/2+c*(card G.support-#s)/2))
+            -(c*(card V)^2/2+c*card V/2) := by
           apply sub_le_sub_right
           apply h.trans
           apply hs.trans
           apply add_le_add_right
           rw [← Nat.cast_choose_two, ← card_coe s]
           exact_mod_cast card_edgeFinset_le_card_choose_two
-      _ = #s^2/2-(c*#s^2/2+#s+c*((card V)^2-(card G.support)^2)/2
-            +(card V-card G.support)/2) := by ring_nf
+      _ = #s^2/2-(c*((card V)^2-(card G.support)^2)/2 + c*(card V-card G.support)/2
+            +c*#s^2/2+c*#s/2+#s/2) := by ring_nf
       _ ≤ #s^2/2 := by
           apply sub_le_self
-          repeat apply add_nonneg; try positivity
-          · apply div_nonneg (mul_nonneg hc₀ _) zero_le_two
-            apply sub_nonneg_of_le
-            apply pow_le_pow_left₀ (by positivity) (mod_cast set_fintype_card_le_univ G.support)
-          · apply div_nonneg _ zero_le_two
-            exact sub_nonneg_of_le (mod_cast set_fintype_card_le_univ G.support)
+          repeat apply add_nonneg
+          any_goals
+            apply div_nonneg _ zero_le_two
+            try apply mul_nonneg hc₀
+            try apply sub_nonneg_of_le
+            try apply pow_le_pow_left₀
+            try positivity
+            try exact_mod_cast set_fintype_card_le_univ G.support
 
 /-- If `G` has at least `(1-1/r+o(1))*(card V)^2/2` many edges, then `G` contains a copy of
 a `completeEquipartiteGraph` in `r+1` parts each of size `t`.
@@ -418,8 +422,9 @@ theorem completeEquipartiteGraph_isContained_of_card_edgeFinset {ε : ℝ} (hε 
   have hc : 0 < c := add_pos_of_nonneg_of_pos r.one_sub_one_div_cast_nonneg hε'
   -- minimal-degree version of Erdős-Stone theorem
   have ⟨n', ih⟩ := completeEquipartiteGraph_isContained_of_minDegree hε' r t
-  use ⌈1/ε'+n'/√ε'⌉₊; intro V _ _ h_cardV G _ h
-  replace h_cardV : 1/ε'+n'/√ε' < card V := (Nat.le_ceil _).trans_lt (mod_cast h_cardV)
+  use ⌊c/ε'+n'/√ε'⌋₊
+  intro V _ _ h_cardV G _ h
+  rw [Nat.floor_lt (by positivity)] at h_cardV
   -- prove `s` satisfies conditions for minimal-degree version
   rw [← add_halves ε, ← add_assoc] at h
   obtain ⟨s, hδ, h_cards_sq⟩ := exists_induced_subgraph_for_minDegree_for_card_sq hc.le hε'.le h
@@ -429,27 +434,32 @@ theorem completeEquipartiteGraph_isContained_of_card_edgeFinset {ε : ℝ} (hε 
     -- find `completeEquipartiteGraph` from minimal-degree version
     simp_rw [← card_coe, ← Finset.coe_sort_coe] at h_cards hδ
     exact (ih h_cards hδ).trans ⟨Copy.induce G s⟩
-  -- `x ↦ ε'*x^2-x` is strictly monotonic on `[1/(2*ε'), ∞)`
-  have h_strictMonoOn : StrictMonoOn (fun x ↦ ε'*x^2-x) (Set.Ici (1/(2*ε'))) := by
+  -- `x ↦ ε'*x^2-cx` is strictly monotonic on `[c/(2*ε'), ∞)`
+  have h_strictMonoOn : StrictMonoOn (fun x ↦ ε'*x^2-c*x) (Set.Ici (c/(2*ε'))) := by
     apply strictMonoOn_of_deriv_pos (convex_Ici _) (Continuous.continuousOn (by continuity))
     intro x hx
-    rw [deriv_sub, deriv_id'', deriv_const_mul, deriv_pow 2,
-      Nat.cast_two, pow_one, ← mul_assoc ε' 2 x, mul_comm ε' 2]
-    rwa [interior_Ici, Set.mem_Ioi,
-      div_lt_iff₀ (mul_pos two_pos hε'), ← sub_pos, mul_comm x (2*ε')] at hx
-    all_goals simp
+    rw [deriv_sub, deriv_const_mul, deriv_pow 2, Nat.cast_two, pow_one, ← mul_assoc ε' 2 x,
+      mul_comm ε' 2, deriv_const_mul, deriv_id'', mul_one, sub_pos,
+      ← div_lt_iff₀' (mul_pos two_pos hε')]
+    rwa [interior_Ici, Set.mem_Ioi] at hx
+    all_goals
+      try apply DifferentiableAt.const_mul
+      try apply DifferentiableAt.pow
+      exact differentiableAt_id'
   calc (#s^2 : ℝ)
-    _ ≥ ε'*(card V)^2-(card V) := h_cards_sq
-    _ > ε'*(1/ε'+n'/√ε')^2-(1/ε'+n'/√ε') := by
-        have h_le : 1/(2*ε') ≤ 1/ε'+n'/√ε' := by
-          trans 1/ε'
-          · exact one_div_le_one_div_of_le hε' (by linarith)
-          · exact le_add_of_nonneg_right (by positivity)
+    _ ≥ ε'*(card V)^2-c*(card V) := h_cards_sq
+    _ > ε'*(c/ε'+n'/√ε')^2-c*(c/ε'+n'/√ε') := by
+        have h_le : c/(2*ε') ≤ c/ε'+n'/√ε' := by
+          trans c/ε'
+          · rw [mul_comm, ← div_div, half_le_self_iff]
+            exact div_nonneg hc.le hε'.le
+          · rw [le_add_iff_nonneg_right]
+            exact div_nonneg n'.cast_nonneg (sqrt_nonneg ε')
         exact h_strictMonoOn h_le (h_le.trans (mod_cast h_cardV.le)) h_cardV
-    _ = n'^2+n'/sqrt ε' := by
+    _ = n'^2+n'*c/sqrt ε' := by
         rw [add_pow_two, mul_add, div_pow (n' : ℝ) √ε', sq_sqrt hε'.le,
-          mul_div_cancel₀ _ hε'.ne', mul_add, pow_two (1/ε'), ← mul_assoc,
-          mul_comm 2 (1/ε'), mul_assoc (1/ε') 2 _, ← mul_assoc, mul_one_div_cancel hε'.ne']
+          mul_div_cancel₀ _ hε'.ne', mul_add, pow_two (c/ε'), ← mul_assoc,
+          mul_comm 2 (c/ε'), mul_assoc (c/ε') 2 _, ← mul_assoc, mul_div_cancel₀ _ hε'.ne']
         ring_nf
     _ ≥ n'^2 := le_add_of_nonneg_right (by positivity)
 
