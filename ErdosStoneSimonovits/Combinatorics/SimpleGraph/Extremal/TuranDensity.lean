@@ -58,7 +58,7 @@ lemma extremalNumber_div_choose_two_succ_le {n : ℕ} (hn : 2 ≤ n) :
       using card_deleteIncidenceSet_le_extremalNumber_of_free h i
 
 /-- The limit `extremalNumber (Fin n) H / n.choose 2` as `n` approaches `∞` exists. -/
-lemma exists_tendsto_extremalNumber_div_choose_two (H : SimpleGraph V) :
+lemma exists_tendsto_extremalNumber_div_choose_two (H : SimpleGraph W) :
     ∃ x, Tendsto (fun (n : ℕ) ↦ (extremalNumber n H / n.choose 2 : ℝ)) atTop (𝓝 x) := by
   let f := fun (n : ℕ) ↦ (extremalNumber n H / n.choose 2 : ℝ)
   suffices h : ∃ x, Tendsto (fun (n : ℕ) ↦ f (n + 2)) atTop (𝓝 x) by
@@ -77,18 +77,18 @@ lemma exists_tendsto_extremalNumber_div_choose_two (H : SimpleGraph V) :
 as `n` approaches `∞`.
 
 See `SimpleGraph.tendsto_turanDensity` for proof of existence. -/
-noncomputable def turanDensity (H : SimpleGraph V) :=
+noncomputable def turanDensity (H : SimpleGraph W) :=
   limUnder atTop fun (n : ℕ) ↦ (extremalNumber n H / n.choose 2 : ℝ)
 
 /-- The **Turán density** of a simple graph `H` is well-defined. -/
-theorem tendsto_turanDensity (H : SimpleGraph V) :
+theorem tendsto_turanDensity (H : SimpleGraph W) :
     Tendsto (fun (n : ℕ) ↦ (extremalNumber n H / n.choose 2 : ℝ)) atTop (𝓝 (turanDensity H)) := by
   have ⟨_, h⟩ := exists_tendsto_extremalNumber_div_choose_two H
   rwa [← Tendsto.limUnder_eq h] at h
 
 /-- `extremalNumber n H` is asymptotically equivalent to `turanDensity H * n.choose 2` as `n`
 approaches `∞`. -/
-theorem isEquivalent_extremalNumber {H : SimpleGraph V} (h : turanDensity H ≠ 0) :
+theorem isEquivalent_extremalNumber {H : SimpleGraph W} (h : turanDensity H ≠ 0) :
     (fun (n : ℕ) ↦ (extremalNumber n H : ℝ))
       ~[atTop] (fun (n : ℕ) ↦ (turanDensity H * n.choose 2 : ℝ)) := by
   have hπ := tendsto_turanDensity H
