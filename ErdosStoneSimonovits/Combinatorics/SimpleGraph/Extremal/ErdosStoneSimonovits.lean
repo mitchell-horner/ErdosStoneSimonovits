@@ -14,7 +14,7 @@ namespace SimpleGraph
 section ErdosStone
 
 variable {V : Type*} [Fintype V] {G : SimpleGraph V} [DecidableEq V] [DecidableRel G.Adj]
-  {ε : ℝ} {r t t' : ℕ} (A : G.completeEquipartiteSubgraph (Fin r) (Fin t'))
+  {ε : ℝ} {r t t' : ℕ} (A : G.completeEquipartiteSubgraph r t')
 
 local notation "K" => A.verts
 
@@ -59,11 +59,12 @@ private lemma degree_between_verts_lt_of_mem_sdiff {v : V} (hv : v ∈ Kᶜ\W) :
     sum_union disjoint_compl_left, sum_singleton]
   apply add_lt_add_of_le_of_lt
   · conv_rhs =>
-      rw [A.card_verts, Fintype.card_fin t', ← Nat.sub_one_mul,
-        ← card_singleton i, ← card_compl, ← smul_eq_mul, ← sum_const]
+      rw [A.card_verts, ← Nat.sub_one_mul,  ← Fintype.card_fin r, ← card_singleton i,
+        ← card_compl, ← smul_eq_mul, ← sum_const]
       enter [2, j]
-      rw [← Fintype.card_fin t', ← A.card_parts j]
-    apply sum_le_sum; intros
+      rw [← A.card_parts j]
+    apply sum_le_sum
+    intros
     apply card_filter_le
   · contrapose! hs
     obtain ⟨s, hs⟩ := by
@@ -79,7 +80,7 @@ private lemma degree_between_verts_lt_of_mem_sdiff {v : V} (hv : v ∈ Kᶜ\W) :
       rwa [mem_filter, between_adj] at hw
     exact hadj.symm
 
-private lemma card_edgeFinset_between_verts_le [NeZero r] :
+private lemma card_edgeFinset_between_verts_le (hr : 0 < r) :
     (#(G.between K Kᶜ).edgeFinset : ℝ) ≤ ((card V)-#K)*(#K-(t'-t)) + #W*(t'-t) :=
   calc (#(G.between K Kᶜ).edgeFinset : ℝ)
     _ = ∑ v ∈ Kᶜ\W, ((G.between K Kᶜ).degree v : ℝ)
@@ -91,8 +92,8 @@ private lemma card_edgeFinset_between_verts_le [NeZero r] :
         · apply sum_le_sum; intro v hv
           rw [← Nat.cast_sub]
           · exact_mod_cast (degree_between_verts_lt_of_mem_sdiff A hv).le
-          · rw [A.card_verts, Fintype.card_fin t']
-            apply Nat.le_mul_of_pos_left t' card_pos
+          · rw [A.card_verts]
+            apply Nat.le_mul_of_pos_left t' hr
         · apply sum_le_sum; intro v hv
           exact_mod_cast isBipartiteWith_degree_le'
             (between_verts_isBipartiteWith A) (aux_subset_verts_compl A hv)
@@ -102,19 +103,18 @@ private lemma card_edgeFinset_between_verts_le [NeZero r] :
           Nat.cast_sub (card_le_univ K)]
         ring_nf
 
-private lemma card_aux_ge [NeZero r] :
+private lemma card_aux_ge (hr : 0 < r) :
     (#K*(G.minDegree-#K)-((card V)-#K)*(#K-(t'-t)) : ℝ) ≤ (#W*(t'-t) : ℝ) :=
   sub_left_le_of_le_add <| (le_card_edgeFinset_between_verts A).trans
-    (card_edgeFinset_between_verts_le A)
+    (card_edgeFinset_between_verts_le A hr)
 
 /-- `#W` is arbitrarily large with respect to `card V`.
 
 This is an auxiliary definition for the **Erdős-Stone theorem**. -/
-private lemma card_aux_ge_of_minDegree [NeZero r]
+private lemma card_aux_ge_of_minDegree (hr : 0 < r)
     (hδ : G.minDegree ≥ (1-1/r+ε)*(card V))
     {x : ℕ} (hx : (x+r*t')*(t'-t) ≤ (card V)*(t'*r*ε-t)) :
     (x*(t'-t) : ℝ) ≤ (#W*(t'-t) : ℝ) := by
-  have hr_pos : 0 < r := NeZero.pos r
   calc (x*(t'-t) : ℝ)
     _ ≤ (card V)*(t'*r*ε-t)-r*t'*(t'-t) := by
         rw [← add_sub_cancel_right (x : ℝ) (r*t' : ℝ), sub_mul]
@@ -130,7 +130,7 @@ private lemma card_aux_ge_of_minDegree [NeZero r]
     _ ≤ #W*(t'-t) := by
         apply sub_left_le_of_le_add
         exact (le_card_edgeFinset_between_verts A).trans
-          (card_edgeFinset_between_verts_le A)
+          (card_edgeFinset_between_verts_le A hr)
 
 /-- For `w ∈ W`, there exists a `r` subets of vertices of size `t < t'` adjacent to `w`.
 
@@ -154,7 +154,7 @@ private lemma aux.Pi_mem_val (w : W) (i : Fin r) :
 This is an auxiliary definition for the **Erdős-Stone theorem**. -/
 private noncomputable abbrev aux.completeEquipartiteSubgraph
     (y : Π i : Fin r, powersetCard t (A.parts i).val) :
-    G.completeEquipartiteSubgraph (Fin r) (Fin t) where
+    G.completeEquipartiteSubgraph r t where
   parts i := by
     use (y i).val
     have hyi := mem_powersetCard.mp (y i).prop
@@ -169,10 +169,10 @@ include A in
 of a complete equipartite subgraph in `r` parts each of size `t < t'`.
 
 This is an auxiliary definition for the **Erdős-Stone theorem**. -/
-private lemma exists_completeEquipartiteSubgraph_powersetCard [NeZero r]
+private lemma exists_completeEquipartiteSubgraph_powersetCard (hr : 0 < r)
     (ht_lt_t' : t < t') (hδ : G.minDegree ≥ (1-1/r+ε)*(card V))
     (hx : ((t'.choose t)^r*t+r*t')*(t'-t) ≤ (card V)*(t'*r*ε-t)) :
-    ∃ (A : G.completeEquipartiteSubgraph (Fin r) (Fin t)) (s : univ.powersetCard t),
+    ∃ (A : G.completeEquipartiteSubgraph r t) (s : univ.powersetCard t),
       ∀ v₁ ∈ s.val, ∀ i, ∀ v₂ ∈ (A.parts i).val, G.Adj v₁ v₂ := by
   have ht_sub_t'_pos :  0 < (t'-t : ℝ) := sub_pos_of_lt (mod_cast ht_lt_t')
   have ⟨y, hy⟩ : ∃ y : Π i : Fin r, powersetCard t (A.parts i).val,
@@ -184,7 +184,7 @@ private lemma exists_completeEquipartiteSubgraph_powersetCard [NeZero r]
     simp_rw [Fintype.card_pi, card_coe, card_powersetCard,
       A.card_parts, prod_const, card_univ, Fintype.card_fin]
     rw [← @Nat.cast_le ℝ, ← mul_le_mul_right ht_sub_t'_pos]
-    apply card_aux_ge_of_minDegree A hδ (mod_cast hx)
+    apply card_aux_ge_of_minDegree A hr hδ (mod_cast hx)
   have ⟨s', hs'⟩ := exists_subset_card_eq hy
   let s : univ.powersetCard t := by
     use s'.map (Function.Embedding.subtype (· ∈ W))
@@ -211,18 +211,14 @@ theorem completeEquipartiteGraph_isContained_of_minDegree {ε : ℝ} (hε : 0 < 
     ∃ n, ∀ {V : Type*} [Fintype V] [DecidableEq V], n < card V →
       ∀ {G : SimpleGraph V} [DecidableRel G.Adj],
         G.minDegree ≥ (1-1/r+ε)*(card V)
-          → completeEquipartiteGraph (Fin (r+1)) (Fin t) ⊑ G := by
-  rcases show r = 0 ∨ t = 0 ∨ r ≠ 0 ∧ t ≠ 0 by tauto with hr | ht | ⟨hr, ht⟩
-  · use t; intro _ _ _ h_card _ _ _
-    rw [hr, zero_add, completeEquipartiteGraph_eq_bot_of_subsingleton,
-      bot_isContained_iff_card_le]
+          → completeEquipartiteGraph (r+1) t ⊑ G := by
+  rcases show (r = 0 ∨ t = 0) ∨ r ≠ 0 ∧ t ≠ 0 by tauto with h | ⟨hr, ht⟩
+  · rw [← Nat.le_zero_eq, ← @Nat.add_le_add_iff_right r 0 1, zero_add] at h
+    use (r+1)*t
+    intro _ _ _ h_card _ _ _
+    rw [completeEquipartiteGraph_eq_bot_iff.mpr h, bot_isContained_iff_card_le]
     simpa using h_card.le
-  · use 0; intros
-    rw [ht]
-    exact IsContained.of_isEmpty
-  · haveI : NeZero r := ⟨hr⟩
-    haveI : NeZero t := ⟨ht⟩
-    rw [← Nat.pos_iff_ne_zero] at hr ht
+  · rw [← Nat.pos_iff_ne_zero] at hr ht
     -- choose `ε'` to ensure `δ(G)` is large enough
     let ε' := 1/(↑(r-1)*r) + ε
     have hε' : 0 < ε' := by positivity
@@ -251,11 +247,11 @@ theorem completeEquipartiteGraph_isContained_of_minDegree {ε : ℝ} (hε : 0 < 
       rw [mul_assoc]
       exact mul_lt_of_lt_one_right (mod_cast ht') hrε_lt_1
     -- find `completeEquipartiteGraph` from inductive hypothesis
-    replace ih : completeEquipartiteGraph (Fin r) (Fin t') ⊑ G := by
+    replace ih : completeEquipartiteGraph r t' ⊑ G := by
       rcases eq_or_ne r 1 with hr_eq_1 | hr_ne_1
-      · rw [hr_eq_1, completeEquipartiteGraph_eq_bot_of_subsingleton,
+      · rw [completeEquipartiteGraph_eq_bot_iff.mpr (Or.inl hr_eq_1.le),
           bot_isContained_iff_card_le]
-        simp_rw [card_prod, Fintype.card_fin, one_mul]
+        simp_rw [card_prod, Fintype.card_fin, hr_eq_1, one_mul]
         apply h_cardV.le.trans'
         exact_mod_cast calc (t' : ℝ)
         _ ≤ r*t' := le_mul_of_one_le_left (by positivity) (mod_cast hr)
@@ -278,14 +274,13 @@ theorem completeEquipartiteGraph_isContained_of_minDegree {ε : ℝ} (hε : 0 < 
     obtain ⟨A⟩ := by rwa [completeEquipartiteGraph_isContained_iff] at ih
     -- find `completeEquipartiteGraph` from pigeonhole principle
     rw [completeEquipartiteGraph_succ_isContained_iff]
-    obtain ⟨A', ⟨s, hs_mem⟩, hs⟩ := by
-      apply exists_completeEquipartiteSubgraph_powersetCard A ht_lt_t' hδ
+    obtain ⟨A', s, hs⟩ := by
+      apply exists_completeEquipartiteSubgraph_powersetCard A hr ht_lt_t' hδ
       rw [← div_le_iff₀ (sub_pos.mpr ht_lt_t'rε)]
       trans (n : ℝ)
       · apply (Nat.le_ceil _).trans <| Nat.cast_le.mpr (le_max_right n' _)
       · exact_mod_cast h_cardV.le
-    rw [← Fintype.card_fin t] at hs_mem
-    use A', ⟨s, hs_mem⟩, hs
+    use A', s, hs
 
 /-- Repeatedly remove minimal degree vertices until `(G.induce s).minDegree` is
 at least `c * #s`.
@@ -415,7 +410,7 @@ theorem completeEquipartiteGraph_isContained_of_card_edgeFinset {ε : ℝ} (hε 
     ∃ n, ∀ {V : Type*} [Fintype V] [DecidableEq V], n < card V →
       ∀ {G : SimpleGraph V} [DecidableRel G.Adj],
         #G.edgeFinset ≥ (1-1/r+ε)*(card V)^2/2
-        → completeEquipartiteGraph (Fin (r+1)) (Fin t) ⊑ G := by
+        → completeEquipartiteGraph (r+1) t ⊑ G := by
   -- choose `c + ε' = (1-1/r+ε/2) + ε/2 = 1-1/r+ε`
   let ε' := ε/2
   have hε' : 0 < ε' := by positivity
@@ -468,7 +463,7 @@ more than `(1-1/r-ε)*n^2/2` edges.
 This is an auxiliary definition for the **Erdős-Stone-Simonovits theorem**. -/
 lemma card_edgeFinset_completeEquipartiteGraph_gt {r n : ℕ} (hr : 0 < r) (hn : 0 < n) :
     ∀ ε > (2*r/n : ℝ),
-      (1-1/r-ε)*n^2/2 < #(completeEquipartiteGraph (Fin r) (Fin (n/r))).edgeFinset := by
+      (1-1/r-ε)*n^2/2 < #(completeEquipartiteGraph r (n/r)).edgeFinset := by
   let t := n/r
   intro ε hε
   rw [gt_iff_lt, div_lt_iff₀ (by positivity)] at hε
@@ -492,9 +487,9 @@ lemma card_edgeFinset_completeEquipartiteGraph_gt {r n : ℕ} (hr : 0 < r) (hn :
           exact r.one_sub_one_div_cast_le_one
         · apply div_nonneg _ zero_le_two
           exact mul_nonneg (r.one_sub_one_div_cast_nonneg) (by positivity)
-    _ = #(completeEquipartiteGraph (Fin r) (Fin t)).edgeFinset := by
+    _ = #(completeEquipartiteGraph r t).edgeFinset := by
         simp_rw [card_edgeFinset_completeEquipartiteGraph,
-          Fintype.card_fin, Nat.cast_mul, Nat.cast_pow, Nat.cast_choose_two]
+          Nat.cast_mul, Nat.cast_pow, Nat.cast_choose_two]
         field_simp
         ring_nf
 
@@ -514,9 +509,8 @@ lemma lt_extremalNumber_of_not_colorable {ε : ℝ} (hε : 0 < ε)
     rw [div_lt_iff₀ (by positivity), ←div_lt_iff₀' hε]
     exact (Nat.le_ceil _).trans_lt (mod_cast h_cardV)
   let t := card V/r
-  let G : SimpleGraph (Fin r × Fin t) := completeEquipartiteGraph (Fin r) (Fin t)
+  let G : SimpleGraph (Fin r × Fin t) := completeEquipartiteGraph r t
   -- `completeEquipartiteGraph` is `r`-colorable
-  have hc : G.Colorable r := completeEquipartiteGraph_colorable_overFin
   haveI : Nonempty (Fin r × Fin t ↪ V) := by
     apply Function.Embedding.nonempty_of_card_le
     simpa [card_prod, Fintype.card_fin] using (card V).mul_div_le r
@@ -530,7 +524,7 @@ lemma lt_extremalNumber_of_not_colorable {ε : ℝ} (hε : 0 < ε)
   -- `completeEquipartiteGraph` does not contain `H`
   apply le_extremalNumber
   haveI : NeZero r := ⟨hr.ne'⟩
-  exact free_of_colorable nhc (hc.map f)
+  exact free_of_colorable nhc (completeEquipartiteGraph_colorable.map f)
 
 lemma extremalNumber_le_of_colorable {ε : ℝ} (hε : 0 < ε)
     {r : ℕ} (hc : H.Colorable (r+1)) :
@@ -539,9 +533,9 @@ lemma extremalNumber_le_of_colorable {ε : ℝ} (hε : 0 < ε)
   have ⟨t, h_isContained_lhs⟩ := isContained_completeEquipartiteGraph_of_colorable hc
   have ⟨n, h_isContained_rhs⟩ := completeEquipartiteGraph_isContained_of_card_edgeFinset hε r t
   use n; intro V _ _ h_cardV
-  trans (extremalNumber (card V) (completeEquipartiteGraph (Fin (r+1)) (Fin t)) : ℝ)
+  trans (extremalNumber (card V) (completeEquipartiteGraph (r+1) t) : ℝ)
   -- `completeEquipartiteGraph` contains `H`
-  · exact_mod_cast extremalNumber_of_isContained <| h_isContained_lhs (Fintype.card_fin t).ge
+  · exact_mod_cast extremalNumber_of_isContained h_isContained_lhs
   -- `G` contains `completeEquipartiteGraph`
   · have h : 0 ≤ (1-1/r+ε)*(card V)^2/2 := by
       apply div_nonneg _ zero_le_two
