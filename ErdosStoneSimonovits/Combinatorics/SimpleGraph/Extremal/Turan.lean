@@ -31,7 +31,7 @@ lemma isExtremal_top_free_turanGraph :
 /-- The extremal numbers of `⊤` are equal to the number of edges in `turanGraph`.
 
 This is a corollary of **Turán's theorem**. See `SimpleGraph.isTuranMaximal_turanGraph`. -/
-theorem extremalNumber_top (α : Type*) [Fintype α] [Nontrivial α] :
+theorem extremalNumber_top :
     extremalNumber n (⊤ : SimpleGraph α) = #(turanGraph n (card α-1)).edgeFinset := by
   have h := isExtremal_top_free_turanGraph n α
   rw [isExtremal_free_iff, Fintype.card_fin] at h
