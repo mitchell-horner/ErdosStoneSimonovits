@@ -510,14 +510,11 @@ lemma lt_extremalNumber_of_not_colorable {ε : ℝ} (hε : 0 < ε)
     {r : ℕ} (hr : 0 < r) (nhc : ¬H.Colorable r) :
     ∃ n, ∀ {V : Type*} [Fintype V] [DecidableEq V], n < card V →
       (1-1/r-ε)*(card V)^2/2 < extremalNumber (card V) H := by
-  use ⌈2*r/ε⌉₊
+  use ⌊2*r/ε⌋₊
   intro V _ _ h_cardV
   haveI : Nonempty V := by
     rw [← card_pos_iff]
     exact Nat.zero_lt_of_lt h_cardV
-  have hε' : 2*r/card V < ε := by
-    rw [div_lt_iff₀ (by positivity), ←div_lt_iff₀' hε]
-    exact (Nat.le_ceil _).trans_lt (mod_cast h_cardV)
   let t := card V/r
   let G : SimpleGraph (Fin r × Fin t) := completeEquipartiteGraph r t
   -- `completeEquipartiteGraph` is `r`-colorable
@@ -526,8 +523,9 @@ lemma lt_extremalNumber_of_not_colorable {ε : ℝ} (hε : 0 < ε)
     simpa [card_prod, Fintype.card_fin] using (card V).mul_div_le r
   let f := Classical.arbitrary (Fin r × Fin t ↪ V)
   -- `completeEquipartiteGraph` has the right amount of edges
-  have h_card_edges : #G.edgeFinset > (1-1/r-ε)*(card V)^2/2 :=
-    card_edgeFinset_completeEquipartiteGraph_gt hr card_pos ε hε'
+  have h_card_edges : #G.edgeFinset > (1-1/r-ε)*(card V)^2/2 := by
+    apply card_edgeFinset_completeEquipartiteGraph_gt hr card_pos ε
+    rwa [Nat.floor_lt (by positivity), div_lt_iff₀' hε, ← div_lt_iff₀ (by positivity)] at h_cardV
   rw [← G.card_edgeFinset_map f] at h_card_edges
   apply lt_of_lt_of_le h_card_edges
   rw [Nat.cast_le]
