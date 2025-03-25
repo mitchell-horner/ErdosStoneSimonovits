@@ -88,12 +88,14 @@ private abbrev aux (G : SimpleGraph V) [DecidableRel G.Adj] (n : ℕ) :=
 
 variable {G : SimpleGraph V} [DecidableRel G.Adj]
 
-/-- If `G` is `(completeBipartiteGraph α β).Free`, then `#(aux G (card α))` is at most the number
+local notation "X" => aux G (card α)
+
+/-- If `G` is `(completeBipartiteGraph α β).Free`, then `#X` is at most the number
 of ways to choose `card α` vertices from `card V` vertices `card β-1` times.
 
 This is an auxiliary definition for the **Kővári–Sós–Turán theorem**. -/
 private lemma card_aux_le [Nonempty β] (h : (completeBipartiteGraph α β).Free G) :
-    #(aux G (card α)) ≤ (((card V).choose (card α))*(card β-1) : ℝ) := by
+    #X ≤ (((card V).choose (card α))*(card β-1) : ℝ) := by
   simp_rw [card_filter _, sum_product, ← card_filter, ← @card_univ V, ← card_powersetCard,
     ← nsmul_eq_mul, ← sum_const, ← Nat.cast_pred card_pos, ← Nat.cast_sum, Nat.cast_le]
   apply sum_le_sum
@@ -113,14 +115,14 @@ private lemma card_aux_le [Nonempty β] (h : (completeBipartiteGraph α β).Free
   exact hv₁.symm
 
 /-- If the average degree of vertices in `G` is at least `card α-1`, then it follows from a special
-case of Jensen's inequality for `Nat.choose` that `#(aux G (card α))` is at least `card α` times
+case of Jensen's inequality for `Nat.choose` that `#X` is at least `card α` times
 the desending pochhammer function evaluated at the average divided by `(card α).factorial`.
 
 This is an auxiliary definition for the **Kővári–Sós–Turán theorem**. -/
 private lemma le_card_aux [Nonempty V] [Nonempty α]
     (h_avg : card α-1 ≤ (∑ v : V, G.degree v : ℝ)/card V) :
     ((card V)*((descPochhammer ℝ (card α)).eval
-        ((∑ v, G.degree v : ℝ)/card V)/(card α).factorial) : ℝ) ≤ #(aux G (card α)) := by
+        ((∑ v, G.degree v : ℝ)/card V)/(card α).factorial) : ℝ) ≤ #X := by
   simp_rw [card_filter _, sum_product_right, ← card_filter, powersetCard_eq_filter,
     filter_comm, powerset_univ, filter_subset_univ, ← powersetCard_eq_filter,
     card_powersetCard, card_neighborFinset_eq_degree, Nat.cast_sum,
@@ -163,7 +165,7 @@ private lemma card_edgeFinset_le_bound [Nonempty V] [Nonempty α] [Nonempty β]
     any_goals apply Real.rpow_nonneg
     any_goals positivity
   -- double-counting t ⊆ G.neighborSet v
-  trans (#(aux G (card α)) : ℝ)
+  trans (#X : ℝ)
   -- counting t
   · trans (card V)*((descPochhammer ℝ (card α)).eval
         ((∑ v, G.degree v : ℝ)/card V)/(card α).factorial)
