@@ -8,7 +8,7 @@ namespace SimpleGraph
 
 variable {V α β : Type*} [Fintype V] [Fintype α] [Fintype β]
 
-/-- A simple graph contains a copy of a `completeBipartiteGraph α β` iff there exists a set of
+/-- Simple graphs contain a copy of a `completeBipartiteGraph α β` iff there exists a set of
 `card α` vertices adjacent to a set of `card β` vertices. -/
 theorem completeBipartiteGraph_isContained_iff {G : SimpleGraph V} :
     completeBipartiteGraph α β ⊑ G
