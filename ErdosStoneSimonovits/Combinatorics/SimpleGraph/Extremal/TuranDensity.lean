@@ -12,11 +12,11 @@ section TuranDensity
 
 /-- If `G` is `H.Free`, then `G.deleteIncidenceSet v` is also `H.Free` and has at most
 `extremalNumber (card V-1) H` many edges. -/
-theorem card_deleteIncidenceSet_le_extremalNumber_of_free
+theorem card_edgeFinset_deleteIncidenceSet_le_extremalNumber
     [Fintype V] [DecidableRel G.Adj] [DecidableEq V] (h : H.Free G) (v : V) :
     #(G.deleteIncidenceSet v).edgeFinset ≤ extremalNumber (card V-1) H := by
   rw [← card_edgeFinset_induce_compl_singleton, ← @card_unique ({v} : Set V), ← card_compl_set]
-  apply le_extremalNumber
+  apply card_edgeFinset_le_extremalNumber
   contrapose! h
   rw [not_free] at h ⊢
   exact h.trans ⟨Copy.induce G {v}ᶜ⟩
@@ -55,7 +55,7 @@ lemma extremalNumber_div_choose_two_succ_le {n : ℕ} (hn : 2 ≤ n) :
     apply sum_le_sum
     intro i _
     simpa [edgeFinset_deleteIncidenceSet_eq_filter]
-      using card_deleteIncidenceSet_le_extremalNumber_of_free h i
+      using card_edgeFinset_deleteIncidenceSet_le_extremalNumber h i
 
 /-- The limit `extremalNumber (Fin n) H / n.choose 2` as `n` approaches `∞` exists. -/
 lemma exists_tendsto_extremalNumber_div_choose_two (H : SimpleGraph W) :

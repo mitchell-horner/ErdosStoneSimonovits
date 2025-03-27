@@ -532,7 +532,7 @@ lemma lt_extremalNumber_of_not_colorable {ε : ℝ} (hε : 0 < ε)
   apply lt_of_lt_of_le h_card_edges
   rw [Nat.cast_le]
   -- `completeEquipartiteGraph` does not contain `H`
-  apply le_extremalNumber
+  apply card_edgeFinset_le_extremalNumber
   haveI : NeZero r := ⟨hr.ne'⟩
   exact free_of_colorable nhc (completeEquipartiteGraph_colorable.map f)
 
@@ -546,7 +546,7 @@ lemma extremalNumber_le_of_colorable {ε : ℝ} (hε : 0 < ε)
   intro V _ _ h_cardV
   trans (extremalNumber (card V) (completeEquipartiteGraph (r+1) t) : ℝ)
   -- `completeEquipartiteGraph` contains `H`
-  · exact_mod_cast extremalNumber_of_isContained h_isContained_lhs
+  · exact_mod_cast h_isContained_lhs.extremalNumber_le
   -- `G` contains `completeEquipartiteGraph`
   · have h : 0 ≤ (1-1/r+ε)*(card V)^2/2 := by
       apply div_nonneg _ zero_le_two
