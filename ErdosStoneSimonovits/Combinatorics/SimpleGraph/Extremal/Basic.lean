@@ -10,6 +10,7 @@ section ExtremalNumber
 open Classical in
 /-- The extremal number of a natural number `n` and a simple graph `H` is the the maximum number of
 edges in a `H`-free simple graph on `n` vertices.
+
 If `H` is contained in all simple graphs on `n` vertices, then this is `0`. -/
 noncomputable def extremalNumber (n : ℕ) {W : Type*} (H : SimpleGraph W) : ℕ :=
   sup { G : SimpleGraph (Fin n) | H.Free G } (#·.edgeFinset)
@@ -17,7 +18,7 @@ noncomputable def extremalNumber (n : ℕ) {W : Type*} (H : SimpleGraph W) : ℕ
 variable {n : ℕ} {V W : Type*} {G : SimpleGraph V} {H : SimpleGraph W}
 
 open Classical in
-theorem extremalNumber_of_fintypeCard_eq {n : ℕ} [Fintype V] (hc : card V = n) :
+theorem extremalNumber_of_fintypeCard_eq [Fintype V] (hc : card V = n) :
     extremalNumber n H = sup { G : SimpleGraph V | H.Free G } (#·.edgeFinset) := by
   let e := Fintype.equivFinOfCardEq hc
   rw [extremalNumber, le_antisymm_iff]
@@ -37,7 +38,8 @@ theorem extremalNumber_of_fintypeCard_eq {n : ℕ} [Fintype V] (hc : card V = n)
 variable [Fintype V] [DecidableRel G.Adj]
 
 /-- If `G` is `H`-free, then `G` has at most `extremalNumber (card V) H` edges. -/
-theorem card_edgeFinset_le_extremalNumber (h : H.Free G) : #G.edgeFinset ≤ extremalNumber (card V) H := by
+theorem card_edgeFinset_le_extremalNumber (h : H.Free G) :
+    #G.edgeFinset ≤ extremalNumber (card V) H := by
   rw [extremalNumber_of_fintypeCard_eq rfl]
   convert @le_sup _ _ _ _ { G | H.Free G } (#·.edgeFinset) G (by simpa using h)
 
@@ -49,35 +51,35 @@ theorem IsContained.of_extremalNumber_lt_card_edgeFinset
 
 /-- `extremalNumber (card V) H` is at most `x` if and only if every `H`-free simple graph `G` has
 at most `x` edges. -/
-theorem extremalNumber_le_iff (H : SimpleGraph W) (x : ℕ) :
-    extremalNumber (card V) H ≤ x ↔
-      ∀ (G : SimpleGraph V) [DecidableRel G.Adj], H.Free G → #G.edgeFinset ≤ x := by
+theorem extremalNumber_le_iff (H : SimpleGraph W) (m : ℕ) :
+    extremalNumber (card V) H ≤ m ↔
+      ∀ (G : SimpleGraph V) [DecidableRel G.Adj], H.Free G → #G.edgeFinset ≤ m := by
   simp_rw [extremalNumber_of_fintypeCard_eq rfl, Finset.sup_le_iff, mem_filter, mem_univ, true_and]
   exact ⟨fun h _ _ h' ↦ by convert h _ h', fun h _ h' ↦ by convert h _ h'⟩
 
 /-- `extremalNumber (card V) H` is greater than `x` if and only if there exists a `H`-free simple
 graph `G` with more than `x` edges. -/
-theorem lt_extremalNumber_iff (H : SimpleGraph W) (x : ℕ) :
-    x < extremalNumber (card V) H ↔
-      ∃ G : SimpleGraph V, ∃ _ : DecidableRel G.Adj, H.Free G ∧ x < #G.edgeFinset := by
+theorem lt_extremalNumber_iff (H : SimpleGraph W) (m : ℕ) :
+    m < extremalNumber (card V) H ↔
+      ∃ G : SimpleGraph V, ∃ _ : DecidableRel G.Adj, H.Free G ∧ m < #G.edgeFinset := by
   simp_rw [extremalNumber_of_fintypeCard_eq rfl, Finset.lt_sup_iff, mem_filter, mem_univ, true_and]
   exact ⟨fun ⟨_, h, h'⟩ ↦ ⟨_, _, h, h'⟩, fun ⟨_, _, h, h'⟩ ↦ ⟨_, h, by convert h'⟩⟩
 
 variable {R : Type*} [LinearOrderedSemiring R] [FloorSemiring R]
 
 @[inherit_doc extremalNumber_le_iff]
-theorem extremalNumber_le_iff_of_nonneg (H : SimpleGraph W) {x : R} (h : 0 ≤ x) :
-    extremalNumber (card V) H ≤ x ↔
-      ∀ (G : SimpleGraph V) [DecidableRel G.Adj], H.Free G → #G.edgeFinset ≤ x := by
+theorem extremalNumber_le_iff_of_nonneg (H : SimpleGraph W) {m : R} (h : 0 ≤ m) :
+    extremalNumber (card V) H ≤ m ↔
+      ∀ (G : SimpleGraph V) [DecidableRel G.Adj], H.Free G → #G.edgeFinset ≤ m := by
   simp_rw [← Nat.le_floor_iff h]
-  exact extremalNumber_le_iff H ⌊x⌋₊
+  exact extremalNumber_le_iff H ⌊m⌋₊
 
 @[inherit_doc lt_extremalNumber_iff]
-theorem lt_extremalNumber_iff_of_nonneg (H : SimpleGraph W) {x : R} (h : 0 ≤ x) :
-    x < extremalNumber (card V) H ↔
-      ∃ G : SimpleGraph V, ∃ _ : DecidableRel G.Adj, H.Free G ∧ x < #G.edgeFinset := by
+theorem lt_extremalNumber_iff_of_nonneg (H : SimpleGraph W) {m : R} (h : 0 ≤ m) :
+    m < extremalNumber (card V) H ↔
+      ∃ G : SimpleGraph V, ∃ _ : DecidableRel G.Adj, H.Free G ∧ m < #G.edgeFinset := by
   simp_rw [← Nat.floor_lt h]
-  exact lt_extremalNumber_iff H ⌊x⌋₊
+  exact lt_extremalNumber_iff H ⌊m⌋₊
 
 /-- If `H` contains a copy of `H'`, then `extremalNumber n H` is at most `extremalNumber n H`. -/
 theorem IsContained.extremalNumber_le {W' : Type*} {H' : SimpleGraph W'} (h : H' ⊑ H) :
@@ -105,16 +107,20 @@ theorem extremalNumber_congr {n₁ n₂ : ℕ} {W₁ W₂ : Type*} {H₁ : Simpl
     rw [not_free] at h ⊢
     exact h.trans' ⟨e.toCopy⟩
 
+/-- If `H₁ ≃g H₂`, then `extremalNumber n H₁` equals `extremalNumber n H₂`. -/
+theorem extremalNumber_congr_right {W₁ W₂ : Type*} {H₁ : SimpleGraph W₁} {H₂ : SimpleGraph W₂}
+  (e : H₁ ≃g H₂) : extremalNumber n H₁ = extremalNumber n H₂ := extremalNumber_congr rfl e
+
 end ExtremalNumber
 
 section IsExtremal
 
-variable {V W : Type*} [Fintype V] {G : SimpleGraph V} [DecidableRel G.Adj]
+variable {V : Type*} [Fintype V] {G : SimpleGraph V} [DecidableRel G.Adj]
 
 /-- `G` is an extremal graph satisfying `p` if `G` has the maximum number of edges of any simple
 graph satisfying `p`. -/
 def IsExtremal (G : SimpleGraph V) [DecidableRel G.Adj] (p : SimpleGraph V → Prop) :=
-  p G ∧ ∀ (H : SimpleGraph V) [DecidableRel H.Adj], p H → #H.edgeFinset ≤ #G.edgeFinset
+  p G ∧ ∀ (G' : SimpleGraph V) [DecidableRel G'.Adj], p G' → #G'.edgeFinset ≤ #G.edgeFinset
 
 lemma IsExtremal.prop {p : SimpleGraph V → Prop} (h : G.IsExtremal p) : p G := h.1
 
@@ -129,9 +135,8 @@ theorem exists_isExtremal_iff_exists (p : SimpleGraph V → Prop) :
   use G', inferInstanceAs (DecidableRel G'.Adj)
   exact ⟨by simpa using hp', fun _ _ hp ↦ by convert h _ (by simpa using hp)⟩
 
-variable {H : SimpleGraph W}
+variable {W : Type*} {H : SimpleGraph W}
 
-open Classical in
 /-- If `H` has one edge, then exist an `H.Free` extremal graph. -/
 theorem exists_isExtremal_free (h : H ≠ ⊥) :
     ∃ G : SimpleGraph V, ∃ _ : DecidableRel G.Adj, G.IsExtremal H.Free :=
