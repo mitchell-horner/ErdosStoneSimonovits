@@ -33,9 +33,11 @@ lemma isExtremal_top_free_turanGraph :
 This is a corollary of **Turán's theorem**. See `SimpleGraph.isTuranMaximal_turanGraph`. -/
 theorem extremalNumber_top :
     extremalNumber n (⊤ : SimpleGraph α) = #(turanGraph n (card α-1)).edgeFinset := by
-  have h := isExtremal_top_free_turanGraph n α
-  rw [isExtremal_free_iff, Fintype.card_fin] at h
-  exact h.2.symm
+  conv =>
+    enter [1, 1]
+    rw [← Fintype.card_fin n]
+  symm
+  exact card_edgeFinset_of_isExtremal_free (isExtremal_top_free_turanGraph n α)
 
 /-- The `turanGraph` is, up to isomorphism, the unique extremal graph forbidding `⊤`.
 
