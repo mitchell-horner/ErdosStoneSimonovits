@@ -11,11 +11,9 @@ section DeleteEdges
 
 variable {G} {s : Set (Sym2 V)}
 
-instance [DecidableRel G.Adj] [DecidablePred (· ∈ s)] :
-    DecidableRel (G.deleteEdges s).Adj := by
-  intro v w
-  rw [deleteEdges_adj]
-  infer_instance
+instance [DecidableRel G.Adj] [DecidablePred (· ∈ s)] [DecidableEq V] :
+    DecidableRel (G.deleteEdges s).Adj :=
+  inferInstanceAs <| DecidableRel (G \ fromEdgeSet s).Adj
 
 end DeleteEdges
 
