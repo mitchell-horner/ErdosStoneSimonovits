@@ -24,7 +24,7 @@ section FiniteAt
 
 variable (v) [Fintype (G.neighborSet v)]
 
-theorem incidenceFinset_subset [DecidableEq V] [Fintype G.edgeSet]:
+theorem incidenceFinset_subset [DecidableEq V] [Fintype G.edgeSet] :
     G.incidenceFinset v ⊆ G.edgeFinset := by
   rw [incidenceFinset, Set.toFinset_subset_toFinset]
   exact G.incidenceSet_subset v
