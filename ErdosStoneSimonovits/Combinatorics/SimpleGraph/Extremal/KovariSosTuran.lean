@@ -1,5 +1,6 @@
 import Mathlib
 import ErdosStoneSimonovits.Analysis.SpecialFunctions.Pochhammer
+import ErdosStoneSimonovits.Combinatorics.SimpleGraph.Bipartite
 import ErdosStoneSimonovits.Combinatorics.SimpleGraph.Extremal.Basic
 
 open Finset Fintype
@@ -8,79 +9,25 @@ namespace SimpleGraph
 
 variable {V α β : Type*} [Fintype V] [Fintype α] [Fintype β]
 
-/-- Simple graphs contain a copy of a `completeBipartiteGraph α β` iff there exists a set of
-`card α` vertices adjacent to a set of `card β` vertices. -/
-theorem completeBipartiteGraph_isContained_iff {G : SimpleGraph V} :
-    completeBipartiteGraph α β ⊑ G
-      ↔ ∃ (A : univ.powersetCard (Fintype.card α)) (B : univ.powersetCard (Fintype.card β)),
-          ∀ v₁ ∈ A.val, ∀ v₂ ∈ B.val, G.Adj v₁ v₂ := by
-  constructor
-  · intro ⟨f⟩
-    let A := univ.map ⟨f ∘ Sum.inl, f.injective.comp Sum.inl_injective⟩
-    have hA : A ∈ univ.powersetCard (Fintype.card α) := by
-      rw [mem_powersetCard_univ, card_map, card_univ]
-    let B := univ.map ⟨f ∘ Sum.inr, f.injective.comp Sum.inr_injective⟩
-    have hB : B ∈ univ.powersetCard (Fintype.card β) := by
-      rw [mem_powersetCard_univ, card_map, card_univ]
-    use ⟨A, hA⟩, ⟨B, hB⟩
-    intro v₁ hv₁ v₂ hv₂
-    rw [mem_map] at hv₁ hv₂
-    obtain ⟨a, _, ha⟩ := hv₁
-    obtain ⟨b, _, hb⟩ := hv₂
-    rw [← ha, ← hb]
-    exact f.toHom.map_adj (by simp)
-  · intro ⟨⟨A, hA⟩, ⟨B, hB⟩, h⟩
-    rw [mem_powersetCard_univ] at hA hB
-    haveI : Nonempty (α ↪ A) := by
-      apply Function.Embedding.nonempty_of_card_le
-      simpa [← card_coe] using hA.ge
-    let fa : α ↪ A := Classical.arbitrary (α ↪ A)
-    haveI : Nonempty (β ↪ B) := by
-      apply Function.Embedding.nonempty_of_card_le
-      simpa [← card_coe] using hB.ge
-    let fb : β ↪ B := Classical.arbitrary (β ↪ B)
-    let f : α ⊕ β ↪ V := by
-      use Sum.elim (Subtype.val ∘ fa) (Subtype.val ∘ fb)
-      intro ab₁ ab₂
-      match ab₁, ab₂ with
-      | Sum.inl a₁, Sum.inl a₂ => simp [← Subtype.ext_iff_val]
-      | Sum.inr b₁, Sum.inl a₂ =>
-        simpa using (h (fa a₂) (fa a₂).prop (fb b₁) (fb b₁).prop).ne'
-      | Sum.inl a₁, Sum.inr b₂ =>
-        simpa using (h (fa a₁) (fa a₁).prop (fb b₂) (fb b₂).prop).symm.ne'
-      | Sum.inr b₁, Sum.inr b₂ => simp [← Subtype.ext_iff_val]
-    use ⟨f.toFun, ?_⟩, f.injective
-    intro ab₁ ab₂ hadj
-    rcases hadj with ⟨hab₁, hab₂⟩ | ⟨hab₁, hab₂⟩
-    all_goals dsimp [f]
-    · rw [← Sum.inl_getLeft ab₁ hab₁, ← Sum.inr_getRight ab₂ hab₂,
-        Sum.elim_inl, Sum.elim_inr]
-      exact h (fa _) (by simp) (fb _) (by simp)
-    · rw [← Sum.inr_getRight ab₁ hab₁, ← Sum.inl_getLeft ab₂ hab₂,
-        Sum.elim_inl, Sum.elim_inr, adj_comm]
-      exact h (fa _) (by simp) (fb _) (by simp)
-
-section KovariSosTuran
-
 namespace KovariSosTuran
 
-/-- `bound` is upper bound in the statement of the **Kővári–Sós–Turán theorem**.
+/-- `bound` is the upper bound in the statement of the **Kővári–Sós–Turán theorem**.
 
 This is an auxiliary definition for the **Kővári–Sós–Turán theorem**. -/
-noncomputable abbrev bound (V : Type*) [Fintype V] (s t : ℕ) : ℝ :=
-  (t-1)^(1/s : ℝ)*(card V)^(2-1/s : ℝ)/2 + (card V)*(s-1)/2
+noncomputable abbrev bound (n s t : ℕ) : ℝ :=
+  (t-1)^(1/s : ℝ)*n^(2-1/s : ℝ)/2 + n*(s-1)/2
 
-theorem bound_nonneg {s t : ℕ} (hs : 1 ≤ s) (ht : s ≤ t) : 0 ≤ bound V s t := by
+theorem bound_nonneg {n s t : ℕ} (hs : 1 ≤ s) (ht : s ≤ t) : 0 ≤ bound n s t := by
     apply add_nonneg <;> apply div_nonneg _ zero_le_two <;> apply mul_nonneg
     · apply Real.rpow_nonneg <| sub_nonneg_of_le (mod_cast hs.trans ht)
-    · apply Real.rpow_nonneg (card V).cast_nonneg
-    · exact (card V).cast_nonneg
+    · apply Real.rpow_nonneg n.cast_nonneg
+    · exact n.cast_nonneg
     · exact sub_nonneg_of_le (mod_cast hs)
 
 variable [DecidableEq V]
 
-/-- `aux` is the set of pairs `(t, v)` s.t. `t : Finset V` is an `n`-sized subset of the neighbor
-finset of `v : V` in `G : SimpleGraph V`.
+/-- `aux` is the set of pairs `(t, v)` such that `t : Finset V` is an `n`-sized subset of the
+neighbor finset of `v : V` in `G : SimpleGraph V`.
 
 This is an auxiliary definition for the **Kővári–Sós–Turán theorem**. -/
 private abbrev aux (G : SimpleGraph V) [DecidableRel G.Adj] (n : ℕ) :=
@@ -126,19 +73,19 @@ private lemma le_card_aux [Nonempty V] [Nonempty α]
   simp_rw [card_filter _, sum_product_right, ← card_filter, powersetCard_eq_filter,
     filter_comm, powerset_univ, filter_subset_univ, ← powersetCard_eq_filter,
     card_powersetCard, card_neighborFinset_eq_degree, Nat.cast_sum,
-    ← @le_inv_mul_iff₀ _ _ _ _ _ _ _ (card V : ℝ) _ (mod_cast card_pos),
-    mul_sum, div_eq_mul_inv _ (card V : ℝ), mul_comm _ (card V : ℝ)⁻¹, mul_sum]
+    ← le_inv_mul_iff₀ (mod_cast card_pos : 0 < (card V : ℝ)), mul_sum,
+    div_eq_mul_inv _ (card V : ℝ), mul_comm _ (card V : ℝ)⁻¹, mul_sum]
   apply descPochhammer_eval_div_factorial_le_sum_choose (by positivity) _ _ (by simp) (by simp)
   rwa [div_eq_inv_mul, mul_sum] at h_avg
 
 /-- If the average degree of vertices in `G` is at least `card α-1` and `G` is
-`(completeBipartiteGraph α β).Free`, then `G` has at most `bound` edges.
+`(completeBipartiteGraph α β).Free`, then `G` has at most `KovariSosTuran.bound` edges.
 
 This is an auxiliary definition for the **Kővári–Sós–Turán theorem**. -/
 private lemma card_edgeFinset_le_bound [Nonempty V] [Nonempty α] [Nonempty β]
     (h_avg : card α-1 ≤ (∑ v : V, G.degree v : ℝ) / card V)
     (h_free : (completeBipartiteGraph α β).Free G) :
-    #G.edgeFinset ≤ bound V (card α) (card β) := by
+    #G.edgeFinset ≤ bound (card V) (card α) (card β) := by
   have h_avg_sub_nonneg : 0 ≤ (2*#G.edgeFinset/card V-card α+1 : ℝ) := by
     rwa [← Nat.cast_sum, sum_degrees_eq_twice_card_edges, Nat.cast_mul,
       Nat.cast_two, ← sub_nonneg, ← sub_add] at h_avg
@@ -162,18 +109,17 @@ private lemma card_edgeFinset_le_bound [Nonempty V] [Nonempty α] [Nonempty β]
       apply sub_nonneg_of_le
       rw [Nat.one_le_cast]
       apply Nat.succ_le_of_lt
-    any_goals apply Real.rpow_nonneg
     any_goals positivity
-  -- double-counting t ⊆ G.neighborSet v
+  -- double-counting `(t, v) ↦ t ⊆ G.neighborSet v`
   trans (#X : ℝ)
-  -- counting t
+  -- counting `t`
   · trans (card V)*((descPochhammer ℝ (card α)).eval
         ((∑ v, G.degree v : ℝ)/card V)/(card α).factorial)
     · rw [← Nat.cast_two, ← Nat.cast_mul, ← sum_degrees_eq_twice_card_edges, Nat.cast_sum,
         mul_div, div_le_div_iff_of_pos_right (by positivity), mul_le_mul_left (by positivity)]
       exact pow_le_descPochhammer_eval h_avg
     · exact le_card_aux h_avg
-  -- counting v
+  -- counting `v`
   · trans ((card V).choose (card α))*(card β-1)
     · exact card_aux_le h_free
     · apply mul_le_mul_of_nonneg_right (Nat.choose_le_pow_div (card α) (card V))
@@ -184,7 +130,7 @@ end KovariSosTuran
 variable [DecidableEq V]
 
 /-- The `(completeBipartiteGraph α β).Free` simple graphs on the vertex type `V` have at most
-`(card β-1)^(1/(card α))*(card V)^(2-1/(card α))/2+(card α-1)*(card V)/2` edges.
+`(card β-1)^(1/(card α))*(card V)^(2-1/(card α))/2 + (card V)*(card α-1)/2` edges.
 
 This is the **Kővári–Sós–Turán theorem**. -/
 theorem card_edgeFinset_le_of_completeBipartiteGraph_free
@@ -196,12 +142,10 @@ theorem card_edgeFinset_le_of_completeBipartiteGraph_free
     rw [← card_pos_iff]
     exact card_pos.trans_le hcard_le
   cases isEmpty_or_nonempty V
-  -- if no vertices
   · have h_two_sub_one_div_ne_zero : 2 - (card α : ℝ)⁻¹ ≠ 0 := by
       apply sub_ne_zero_of_ne ∘ ne_of_gt
       exact (card α).cast_inv_le_one.trans_lt one_lt_two
     simp [h_two_sub_one_div_ne_zero]
-  -- if vertices
   · rcases lt_or_le (∑ v, G.degree v : ℝ) ((card V)*(card α-1) : ℝ) with h_sum_lt | h_avg
     -- if avg degree less than `card a-1`
     · rw [← Nat.cast_sum, sum_degrees_eq_twice_card_edges,
@@ -217,17 +161,16 @@ theorem card_edgeFinset_le_of_completeBipartiteGraph_free
     · rw [← le_div_iff₀' (mod_cast card_pos)] at h_avg
       exact KovariSosTuran.card_edgeFinset_le_bound h_avg h_free
 
-/-- The extremal numbers of `completeBipartiteGraph α β` on the type `V` are at most
-`(card β-1)^(1/card α)*(card V)^(2-1/card α)/2+(card α-1)*(card V)/2`.
+/-- The extremal numbers of `completeBipartiteGraph α β` are at most
+`(card β-1)^(1/card α)*n^(2-1/card α)/2 + n*(card α-1)/2`.
 
 This is the corollary of the **Kővári–Sós–Turán theorem** for extremal numbers. -/
-theorem extremalNumber_completeBipartiteGraph_le [Nonempty α] (hcard_le : card α ≤ card β) :
-  extremalNumber (card V) (completeBipartiteGraph α β)
-    ≤ ((card β-1)^(1/card α : ℝ)*(card V)^(2-1/card α : ℝ)/2 + (card V)*(card α-1)/2 : ℝ) := by
-  rw [extremalNumber_le_iff_of_nonneg _ <| KovariSosTuran.bound_nonneg card_pos hcard_le]
+theorem extremalNumber_completeBipartiteGraph_le (n : ℕ) [Nonempty α] (hcard_le : card α ≤ card β) :
+  extremalNumber n (completeBipartiteGraph α β)
+    ≤ ((card β-1)^(1/card α : ℝ)*n^(2-1/card α : ℝ)/2 + n*(card α-1)/2 : ℝ) := by
+  rw [← Fintype.card_fin n,
+    extremalNumber_le_iff_of_nonneg _ <| KovariSosTuran.bound_nonneg card_pos hcard_le]
   intro G _ h_free
   exact card_edgeFinset_le_of_completeBipartiteGraph_free hcard_le h_free
-
-end KovariSosTuran
 
 end SimpleGraph
