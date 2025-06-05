@@ -195,28 +195,25 @@ end IsBipartiteWith
 
 section Between
 
-/-- The simple graph of edges that connect a vertex in the set `s` to a vertex in the set `t` in
-the simple graph `G`. -/
+/-- The subgraph of `G` containing edges that connect a vertex in the set `s` to a vertex in the
+set `t`. -/
 def between (s t : Set V) (G : SimpleGraph V) : SimpleGraph V where
   Adj v w := G.Adj v w ∧ (v ∈ s ∧ w ∈ t ∨ v ∈ t ∧ w ∈ s)
   symm v w := by tauto
 
-lemma between_adj :
-    (G.between s t).Adj v w ↔ G.Adj v w ∧ (v ∈ s ∧ w ∈ t ∨ v ∈ t ∧ w ∈ s) := by rfl
+lemma between_adj : (G.between s t).Adj v w ↔ G.Adj v w ∧ (v ∈ s ∧ w ∈ t ∨ v ∈ t ∧ w ∈ s) := by rfl
+
+lemma between_le : G.between s t ≤ G := fun _ _ h ↦ h.1
 
 lemma between_comm : G.between s t = G.between t s := by
-  ext v w
-  simp [between_adj, or_comm]
+  ext v w; simp [between_adj, or_comm]
 
-instance [DecidablePred (· ∈ s)] [DecidablePred (· ∈ t)] [DecidableRel G.Adj] :
-    DecidableRel (G.between s t).Adj := by
-  intro v w
-  rw [between_adj]
-  infer_instance
+instance [DecidableRel G.Adj] [DecidablePred (· ∈ s)] [DecidablePred (· ∈ t)] :
+    DecidableRel (G.between s t).Adj :=
+  inferInstanceAs (DecidableRel fun v w ↦ G.Adj v w ∧ (v ∈ s ∧ w ∈ t ∨ v ∈ t ∧ w ∈ s))
 
 /-- `G.between s t` is bipartite if the sets `s` and `t` are disjoint. -/
-theorem between_isBipartiteWith (h : Disjoint s t) :
-    (G.between s t).IsBipartiteWith s t where
+theorem between_isBipartiteWith (h : Disjoint s t) : (G.between s t).IsBipartiteWith s t where
   disjoint := h
   mem_of_adj v w := by
     rw [between_adj]
@@ -256,8 +253,7 @@ vertices from `s`. -/
 theorem degree_le_between_plus (hv : v ∈ s) :
     G.degree v ≤ (G.between s sᶜ).degree v + s.card := by
   have h_bipartite : (G.between s sᶜ).IsBipartiteWith s ↑(sᶜ) := by
-    rw [coe_compl]
-    exact between_isBipartiteWith disjoint_compl_right
+    simpa [coe_compl] using between_isBipartiteWith disjoint_compl_right
   simp_rw [← card_neighborFinset_eq_degree,
     ← card_union_of_disjoint (isBipartiteWith_neighborFinset_disjoint h_bipartite hv)]
   exact card_le_card (neighborFinset_subset_between_union hv)
@@ -278,8 +274,7 @@ vertices from `sᶜ`. -/
 theorem degree_le_between_plus' (hw : w ∈ sᶜ) :
     G.degree w ≤ (G.between s sᶜ).degree w + sᶜ.card := by
   have h_bipartite : (G.between s sᶜ).IsBipartiteWith s ↑(sᶜ) := by
-    rw [coe_compl]
-    exact between_isBipartiteWith disjoint_compl_right
+    simpa [coe_compl] using between_isBipartiteWith disjoint_compl_right
   simp_rw [← card_neighborFinset_eq_degree,
     ← card_union_of_disjoint (isBipartiteWith_neighborFinset_disjoint' h_bipartite hw)]
   exact card_le_card (neighborFinset_subset_between_union' hw)
