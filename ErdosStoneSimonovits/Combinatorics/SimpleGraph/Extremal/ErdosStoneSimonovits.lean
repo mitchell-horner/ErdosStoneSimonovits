@@ -59,8 +59,7 @@ private lemma degree_between_verts_lt_of_mem_sdiff {v : V} (hv : v ∈ Kᶜ\W) :
   have ⟨i, hs⟩ := hv.2 hv.1
   rw [← card_neighborFinset_eq_degree,
     isBipartiteWith_neighborFinset' (between_verts_isBipartiteWith A) hv.1,
-    filter_disjiUnion, card_disjiUnion, ← union_compl {i}, union_comm,
-    sum_union disjoint_compl_left, sum_singleton]
+    filter_disjiUnion, card_disjiUnion, sum_eq_sum_diff_singleton_add (mem_univ i)]
   apply add_lt_add_of_le_of_lt
   · conv_rhs =>
       rw [A.card_verts, ← Nat.sub_one_mul,  ← Fintype.card_fin r,
@@ -318,13 +317,13 @@ private lemma exists_induced_subgraph_for_minDegree {c : ℝ} (hc₀ : 0 ≤ c) 
       exists_induced_subgraph_for_minDegree hc₀ hc₁ G'
     have ⟨hs, hx_not_mem⟩ : (s : Set V) ⊆ G.support ∧ ↑x ∉ (s : Set V) := by
       rw [← Set.disjoint_singleton_right, ← Set.subset_diff]
-      exact hs'.trans (G.deleteIncidenceSet_support_subset ↑x)
+      exact hs'.trans (G.support_deleteIncidenceSet_subset ↑x)
     have ihδ : c*#s ≤ (G.induce s).minDegree := by
-      simpa [← deleteIncidenceSet_induce_of_not_mem G hx_not_mem] using ihδ'
+      simpa [← induce_deleteIncidenceSet_of_not_mem G hx_not_mem] using ihδ'
     have ih_card_edges : #(G.induce s).edgeFinset ≥ #G'.edgeFinset
         -c*((card G'.support)^2-#s^2)/2-c*((card G'.support)-#s)/2 := by
       simpa [sub_sub, Set.toFinset_card,
-        ← G.deleteIncidenceSet_induce_of_not_mem hx_not_mem] using ih_card_edges'
+        ← G.induce_deleteIncidenceSet_of_not_mem hx_not_mem] using ih_card_edges'
     refine ⟨s, hs, ihδ, ?_⟩
     calc (#(G.induce s).edgeFinset : ℝ)
       _ ≥ #G'.edgeFinset-(c*((card G'.support)^2-#s^2)/2+c*(card G'.support-#s)/2) := by
