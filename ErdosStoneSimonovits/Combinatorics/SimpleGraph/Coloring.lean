@@ -7,7 +7,7 @@ namespace SimpleGraph
 
 variable {V : Type*} {G : SimpleGraph V} {n : ℕ}
 
-instance {α : Type*} [DecidableEq α] [Fintype α] {C : Coloring G α} {c : α} :
+instance {α : Type*} [DecidableEq α] {C : Coloring G α} {c : α} :
     DecidablePred (· ∈ C.colorClass c) :=
   inferInstanceAs <| DecidablePred (· ∈ { v | C v = c })
 
