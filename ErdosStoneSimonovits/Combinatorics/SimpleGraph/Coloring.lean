@@ -8,9 +8,8 @@ namespace SimpleGraph
 variable {V : Type*} {G : SimpleGraph V} {n : ℕ}
 
 instance {α : Type*} [DecidableEq α] [Fintype α] {C : Coloring G α} {c : α} :
-    DecidablePred (· ∈ C.colorClass c) := by
-  unfold Coloring.colorClass
-  infer_instance
+    DecidablePred (· ∈ C.colorClass c) :=
+  inferInstanceAs <| DecidablePred (· ∈ { v | C v = c })
 
 lemma free_of_colorable {α : Type*} {A : SimpleGraph α}
     (nhc : ¬A.Colorable n) (hc : G.Colorable n) : A.Free G := by
