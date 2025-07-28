@@ -12,9 +12,8 @@ section CompleteEquipartiteGraph
 
 variable {r t : ℕ}
 
-/-- The **complete equipartite graph** in types `r`, `t` is the simple graph whoes vertices are
-copies of `t` indexed by `r`. The vertices of a `completeEquipartiteGraph` are adjacent if and only
-if the indexes are equal. -/
+/-- The **complete equipartite graph** in `r` parts each of *equal* size `t` such that two
+vertices are adjacent if and only if they are in different parts. -/
 abbrev completeEquipartiteGraph (r t : ℕ) : SimpleGraph ((Fin r) × (Fin t)) :=
   (⊤ : SimpleGraph (Fin r)).comap Prod.fst
 
@@ -35,20 +34,18 @@ def completeEquipartiteGraph.completeMultipartiteGraph :
 
 @[simp]
 lemma completeEquipartiteGraph_adj {v w} :
-    (completeEquipartiteGraph r t).Adj v w ↔ v.1 ≠ w.1 := by rfl
+  (completeEquipartiteGraph r t).Adj v w ↔ v.1 ≠ w.1 := by rfl
 
-/-- The `completeEquipartiteGraph r t` contains no edges when `r ≤ 1` or `t = 0`. -/
+/-- `completeEquipartiteGraph r t` contains no edges when `r ≤ 1` or `t = 0`. -/
 lemma completeEquipartiteGraph_eq_bot_iff :
     completeEquipartiteGraph r t = ⊥ ↔ r ≤ 1 ∨ t = 0 := by
   rw [← not_iff_not, not_or, ← ne_eq, ← edgeSet_nonempty, not_le, ← Nat.succ_le_iff,
     ← Fin.nontrivial_iff_two_le, ← ne_eq, ← Nat.pos_iff_ne_zero, Fin.pos_iff_nonempty]
-  constructor
-  · intro ⟨e, he⟩
-    induction' e with v₁ v₂
+  refine ⟨fun ⟨e, he⟩ ↦ ?_, fun ⟨⟨i₁, i₂, hv⟩, ⟨x⟩⟩ ↦ ?_⟩
+  · induction' e with v₁ v₂
     rw [mem_edgeSet, completeEquipartiteGraph_adj] at he
     exact ⟨⟨v₁.1, v₂.1, he⟩, ⟨v₁.2⟩⟩
-  · intro ⟨⟨i₁, i₂, hv⟩, ⟨x⟩⟩
-    use s((i₁, x), (i₂, x))
+  · use s((i₁, x), (i₂, x))
     rw [mem_edgeSet, completeEquipartiteGraph_adj]
     exact hv
 
@@ -56,7 +53,7 @@ theorem neighborSet_completeEquipartiteGraph (v) :
     (completeEquipartiteGraph r t).neighborSet v = {v.1}ᶜ ×ˢ Set.univ := by
   ext; simp [ne_comm]
 
-lemma neighborFinset_completeEquipartiteGraph (v) :
+theorem neighborFinset_completeEquipartiteGraph (v) :
     (completeEquipartiteGraph r t).neighborFinset v = {v.1}ᶜ ×ˢ univ := by
   ext; simp [ne_comm]
 
@@ -86,17 +83,17 @@ def Coloring.completeEquipartiteGraph :
 theorem completeEquipartiteGraph_colorable :
   (completeEquipartiteGraph r t).Colorable r := ⟨Coloring.completeEquipartiteGraph⟩
 
-/-- Every `n`-colorable graph is contained in the `completeEquipartiteGraph` in `n` parts (as long
+/-- Every `n`-colorable graph is contained in a `completeEquipartiteGraph` in `n` parts (as long
   as the parts are at least as large as the largest color class). -/
 theorem isContained_completeEquipartiteGraph_of_colorable [Fintype V]
     {n : ℕ} (h : G.Colorable n) : ∃ t, G ⊑ completeEquipartiteGraph n t := by
   let C := h.some
   let t := univ.sup (fun c ↦ card (C.colorClass c))
   use t
-  haveI (c) : Nonempty (C.colorClass c ↪ (Fin t)) := by
+  haveI (c : Fin n) : Nonempty (C.colorClass c ↪ (Fin t)) := by
     rw [Function.Embedding.nonempty_iff_card_le, Fintype.card_fin]
-    apply @le_sup _ _ _ _ _ (fun c ↦ card (C.colorClass c)) c (mem_univ c)
-  have ι (c) := Classical.arbitrary (C.colorClass c ↪ (Fin t))
+    exact @le_sup _ _ _ _ _ (fun c ↦ card (C.colorClass c)) c (mem_univ c)
+  have ι (c : Fin n) := Classical.arbitrary (C.colorClass c ↪ (Fin t))
   have hι_ceq {c₁ c₂} {v} {w} (hc_eq : c₁ = c₂) (hι_eq : ι c₁ v = ι c₂ w) : v.val = w.val := by
     let v' : C.colorClass c₂ := by
       use v
