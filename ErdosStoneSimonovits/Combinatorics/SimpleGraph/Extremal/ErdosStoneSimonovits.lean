@@ -141,18 +141,14 @@ private lemma mul_le_card_aux_mul
 
 This is an auxiliary definition for the **Erdős-Stone theorem**. -/
 private noncomputable abbrev aux.Pi :
-    W → Π i : Fin r, powersetCard t (A.parts i).val := by
-  intro ⟨w, hw⟩ i
-  rw [mem_filter] at hw
-  exact (hw.2 i).choose
+    W → Π i : Fin r, powersetCard t (A.parts i).val :=
+  fun ⟨_, h⟩ i ↦ (Multiset.of_mem_filter h i).choose
 
 local notation "F" => aux.Pi A
 
 private lemma aux.Pi.mem_val (w : W) (i : Fin r) :
-    ∀ v ∈ (F w i).val, G.Adj w v := by
-  have hw := w.prop
-  rw [mem_filter] at hw
-  exact (hw.2 i).choose_spec
+    ∀ v ∈ (F w i).val, G.Adj w v :=
+  (Multiset.of_mem_filter w.prop i).choose_spec
 
 /-- If `#W` is sufficently large, then there exist at least `t` vertices adjacent to `t` vertices
 in each of the `r` parts of `K`.
