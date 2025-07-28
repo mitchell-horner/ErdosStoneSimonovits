@@ -154,9 +154,9 @@ theorem card_verts : #A.verts = r * t := by
 noncomputable def toCopy : Copy (completeEquipartiteGraph r t) G := by
   have h_card_eq {i} : card (A.parts i) = t := by
     simpa [card_coe] using A.card_parts i
-  haveI (i) : Nonempty (Fin t ↪ A.parts i) := by
+  haveI (i : Fin r) : Nonempty (Fin t ↪ A.parts i) := by
     rw [Function.Embedding.nonempty_iff_card_le, Fintype.card_fin, h_card_eq]
-  have fᵣ (i) : Fin t ↪ A.parts i := Classical.arbitrary (Fin t ↪ A.parts i)
+  have fᵣ (i : Fin r) : Fin t ↪ A.parts i := Classical.arbitrary (Fin t ↪ A.parts i)
   let f : (Fin r) × (Fin t) ↪ V := by
     use fun (i, x) ↦ fᵣ i x
     intro (i₁, x₁) (i₂, x₂) heq
