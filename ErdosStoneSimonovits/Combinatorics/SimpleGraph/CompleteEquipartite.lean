@@ -187,8 +187,8 @@ def ofCopy (f : Copy (completeEquipartiteGraph r t) G) : G.completeEquipartiteSu
 
 end completeEquipartiteSubgraph
 
-/-- Simple graphs contain a copy of a `completeEquipartiteGraph r t` iff the type of
-`G.completeEquipartiteSubgraph r t` are nonempty. -/
+/-- Simple graphs contain a copy of a `completeEquipartiteGraph r t` iff the type
+`G.completeEquipartiteSubgraph r t` is nonempty. -/
 theorem completeEquipartiteGraph_isContained_iff :
     completeEquipartiteGraph r t ⊑ G ↔ Nonempty (G.completeEquipartiteSubgraph r t) :=
   ⟨fun ⟨f⟩ ↦ ⟨completeEquipartiteSubgraph.ofCopy f⟩, fun ⟨A⟩ ↦ ⟨A.toCopy⟩⟩
