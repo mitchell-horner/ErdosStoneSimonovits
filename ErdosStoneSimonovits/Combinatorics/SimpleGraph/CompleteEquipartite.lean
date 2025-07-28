@@ -121,6 +121,7 @@ variable [Fintype V]
 /-- The complete equipartite subgraphs in `r` parts each of size `t` in `G` are the `r` subsets
 of vertices each of size `t` such that vertices in distinct subsets are adjacent. -/
 structure completeEquipartiteSubgraph (G : SimpleGraph V) (r t : ℕ) where
+  /-- The `r` parts of size `t`. -/
   parts : Fin r → @univ.powersetCard V t
   Adj : ∀ ⦃i₁ i₂⦄, i₁ ≠ i₂ → ∀ v ∈ (parts i₁).val, ∀ w ∈ (parts i₂).val, G.Adj v w
 
@@ -151,6 +152,7 @@ abbrev verts : Finset V := univ.disjiUnion (Subtype.val ∘ A.parts) A.pairwiseD
 theorem card_verts : #A.verts = r * t := by
   simp [card_disjiUnion, Function.comp_apply, card_parts]
 
+/-- A complete equipartite subgraph gives rise to a copy of a complete equipartite graph. -/
 noncomputable def toCopy : Copy (completeEquipartiteGraph r t) G := by
   have h_card_eq {i} : card (A.parts i) = t := by
     simpa [card_coe] using A.card_parts i
@@ -170,6 +172,7 @@ noncomputable def toCopy : Copy (completeEquipartiteGraph r t) G := by
   intro (i₁, x₁) (i₂, x₂) hr
   exact A.Adj hr _ (fᵣ i₁ x₁).prop _ (fᵣ i₂ x₂).prop
 
+/-- A copy of a complete equipartite graph identifies a complete equipartite subgraph. -/
 def ofCopy (f : Copy (completeEquipartiteGraph r t) G) : G.completeEquipartiteSubgraph r t where
   parts a := by
     let fᵣ (i : Fin r) : Fin t ↪ V := by
