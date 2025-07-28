@@ -1,7 +1,7 @@
 import Mathlib
 import ErdosStoneSimonovits.Analysis.SpecialFunctions.Choose
 import ErdosStoneSimonovits.Combinatorics.SimpleGraph.Bipartite
-import ErdosStoneSimonovits.Combinatorics.SimpleGraph.CompleteMultipartite
+import ErdosStoneSimonovits.Combinatorics.SimpleGraph.CompleteEquipartite
 import ErdosStoneSimonovits.Combinatorics.SimpleGraph.Extremal.TuranDensity
 import ErdosStoneSimonovits.Data.Finset.Union
 import ErdosStoneSimonovits.Data.Nat.Cast.Order.Field
