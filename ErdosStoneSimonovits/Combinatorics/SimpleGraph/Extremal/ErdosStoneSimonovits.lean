@@ -535,7 +535,9 @@ lemma extremalNumber_le_of_colorable {ε : ℝ} (hε : 0 < ε)
     {r : ℕ} (hc : H.Colorable (r+1)) :
     ∃ n, ∀ {V : Type*} [Fintype V] [DecidableEq V], n < card V →
       extremalNumber (card V) H ≤ (1-1/r+ε)*(card V)^2/2 := by
-  have ⟨t, h_isContained_lhs⟩ := isContained_completeEquipartiteGraph_of_colorable hc
+  obtain ⟨C⟩ := hc
+  have h_isContained_lhs := isContained_completeEquipartiteGraph_of_colorable C
+  let t := univ.sup fun c ↦ card (C.colorClass c)
   have ⟨n, h_isContained_rhs⟩ := completeEquipartiteGraph_isContained_of_card_edgeFinset hε r t
   use n
   intro V _ _ h_cardV
