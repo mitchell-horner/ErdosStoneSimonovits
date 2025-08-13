@@ -6,6 +6,9 @@ namespace SimpleGraph
 
 open Finset Fintype
 
+lemma turanGraph_adj {n r v w} :
+  (turanGraph n r).Adj v w ↔ v % r ≠ w % r := by rfl
+
 variable {V : Type*} {G : SimpleGraph V} (n : ℕ) (α : Type*) [Fintype α]
 
 /-- A simple graph does not contain `⊤` on `n` vertices if and only if it has no `n`-cliques. -/
