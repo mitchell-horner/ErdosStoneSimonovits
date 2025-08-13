@@ -1,6 +1,6 @@
 import Mathlib
 import ErdosStoneSimonovits.Combinatorics.SimpleGraph.Coloring
-import ErdosStoneSimonovits.Combinatorics.SimpleGraph.Extremal.Basic
+import ErdosStoneSimonovits.Combinatorics.SimpleGraph.Extremal.Turan
 
 open Fintype Finset
 
@@ -13,9 +13,14 @@ section CompleteEquipartiteGraph
 variable {r t : ℕ}
 
 /-- The **complete equipartite graph** in `r` parts each of *equal* size `t` such that two
-vertices are adjacent if and only if they are in different parts. -/
+vertices are adjacent if and only if they are in different parts, often denoted $K_r(t)$.
+
+This is isomorphic to a corresponding `completeMultipartiteGraph` and `turanGraph`. The difference
+is that the former vertices are a product type.
+
+See `completeEquipartiteGraph.completeMultipartiteGraph`, `completeEquipartiteGraph.turanGraph`. -/
 abbrev completeEquipartiteGraph (r t : ℕ) : SimpleGraph (Fin r × Fin t) :=
-  (⊤ : SimpleGraph (Fin r)).comap Prod.fst
+  SimpleGraph.comap Prod.fst ⊤
 
 /-- A `completeEquipartiteGraph` is isomorphic to a corresponding `completeMultipartiteGraph`.
 
