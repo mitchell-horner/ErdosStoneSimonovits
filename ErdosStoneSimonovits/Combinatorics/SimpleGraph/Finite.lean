@@ -52,9 +52,8 @@ theorem minDegree_lt_card [DecidableRel G.Adj] [Nonempty V] :
     G.minDegree < Fintype.card V := by
   obtain ⟨v, hδ⟩ := G.exists_minimal_degree_vertex
   rw [hδ, ← card_neighborFinset_eq_degree, ← card_univ]
-  have h : v ∉ G.neighborFinset v := by
-    rw [mem_neighborFinset]
-    exact G.loopless v
+  have h : v ∉ G.neighborFinset v :=
+    (G.mem_neighborFinset v v).not.mpr (G.loopless v)
   contrapose! h
   rw [eq_of_subset_of_card_le (subset_univ _) h]
   exact mem_univ v
