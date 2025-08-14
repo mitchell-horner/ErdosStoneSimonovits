@@ -37,7 +37,7 @@ theorem degree_eq_zero_iff_not_mem_support : G.degree v = 0 ↔ v ∉ G.support 
 
 /-- The degree of a vertex is at most the number of edges. -/
 theorem degree_le_card_edgeFinset [DecidableEq V] [Fintype G.edgeSet] :
-    G.degree v ≤ G.edgeFinset.card := by
+    G.degree v ≤ #G.edgeFinset := by
   rw [← card_incidenceFinset_eq_degree]
   exact card_le_card (G.incidenceFinset_subset v)
 
