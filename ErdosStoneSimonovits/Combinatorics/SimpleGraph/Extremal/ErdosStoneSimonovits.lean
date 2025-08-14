@@ -482,7 +482,8 @@ lemma card_edgeFinset_completeEquipartiteGraph_gt {r n : ℕ} (hr : 0 < r) (hn :
           enter [1, 1]
           rw [← n.div_add_mod r, Nat.cast_add, add_sq, add_assoc, mul_add,
             add_div, Nat.cast_mul, mul_pow, ← mul_assoc]
-        rw [← Nat.cast_mul, ← Nat.sub_mod_eq_mul_div, Nat.cast_sub (n.mod_le r)]
+        rw [← Nat.cast_mul, ← Nat.sub_eq_of_eq_add (Nat.div_add_mod n r).symm,
+          Nat.cast_sub (n.mod_le r)]
         ring_nf
     _ ≤ (1-1/r)*r^2*t^2/2 := by
         apply sub_le_self
