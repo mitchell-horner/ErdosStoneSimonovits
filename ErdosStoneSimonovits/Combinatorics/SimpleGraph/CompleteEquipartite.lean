@@ -181,7 +181,7 @@ theorem pairwiseDisjoint_parts :
 /-- The finset of vertices in a `G.completeEquipartiteSubgraph r t`. -/
 abbrev verts : Finset V := univ.disjiUnion (Subtype.val ∘ A.parts) A.pairwiseDisjoint_parts
 
-/-- There are `r*t` vertices in a `G.completeEquipartiteSubgraph r t`. -/
+/-- There are `r * t` vertices in a `G.completeEquipartiteSubgraph r t`. -/
 theorem card_verts : #A.verts = r * t := by
   simp [card_disjiUnion, Function.comp_apply, card_parts]
 
@@ -229,11 +229,11 @@ theorem completeEquipartiteGraph_isContained_iff :
     completeEquipartiteGraph r t ⊑ G ↔ Nonempty (G.completeEquipartiteSubgraph r t) :=
   ⟨fun ⟨f⟩ ↦ ⟨completeEquipartiteSubgraph.ofCopy f⟩, fun ⟨A⟩ ↦ ⟨A.toCopy⟩⟩
 
-/-- Simple graphs contain a copy of a `completeEquipartiteGraph (n+1) t` iff there exists
+/-- Simple graphs contain a copy of a `completeEquipartiteGraph (n + 1) t` iff there exists
 `s : univ.powersetCard t` and `A : G.completeEquipartiteSubgraph n t` such that the vertices
 in `s` are adjacent to the vertices in `A`. -/
 theorem completeEquipartiteGraph_succ_isContained_iff {n : ℕ} :
-  completeEquipartiteGraph (n+1) t ⊑ G
+  completeEquipartiteGraph (n + 1) t ⊑ G
     ↔ ∃ (A : G.completeEquipartiteSubgraph n t) (s : univ.powersetCard t),
         ∀ v₁ ∈ s.val, ∀ i, ∀ v₂ ∈ (A.parts i).val, G.Adj v₁ v₂ := by
   rw [completeEquipartiteGraph_isContained_iff]
@@ -256,14 +256,14 @@ theorem completeEquipartiteGraph_succ_isContained_iff {n : ℕ} :
     use fun i ↦ if hi : ↑i < n then A.parts ⟨i, hi⟩ else s
     intro i₁ i₂ hne v₁ hv₁ v₂ hv₂
     by_cases hi₁ : ↑i₁ < n <;> by_cases hi₂ : ↑i₂ < n
-    all_goals simp only [hi₁, hi₂, ↓reduceDIte] at hne hv₁ hv₂ ⊢
+        <;> simp only [hi₁, hi₂, ↓reduceDIte] at hne hv₁ hv₂ ⊢
     · have hne : i₁.castLT hi₁ ≠ i₂.castLT hi₂ := by rwa [Fin.ext_iff.ne] at hne ⊢
       exact A.Adj hne v₁ hv₁ v₂ hv₂
     · exact (hs v₂ hv₂ ⟨i₁, hi₁⟩ v₁ hv₁).symm
     · exact hs v₁ hv₁ ⟨i₂, hi₂⟩ v₂ hv₂
     · absurd hne
-      rw [Fin.ext_iff, Nat.eq_of_le_of_lt_succ (le_of_not_lt hi₁) i₁.isLt,
-        Nat.eq_of_le_of_lt_succ (le_of_not_lt hi₂) i₂.isLt]
+      rw [Fin.ext_iff, Nat.eq_of_le_of_lt_succ (le_of_not_gt hi₁) i₁.isLt,
+        Nat.eq_of_le_of_lt_succ (le_of_not_gt hi₂) i₂.isLt]
 
 end CompleteEquipartiteSubgraph
 
