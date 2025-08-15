@@ -11,13 +11,16 @@ instance {α : Type*} [DecidableEq α] {C : Coloring G α} {c : α} :
     DecidablePred (· ∈ C.colorClass c) :=
   inferInstanceAs <| DecidablePred (· ∈ { v | C v = c })
 
-lemma free_of_colorable {α : Type*} {A : SimpleGraph α}
+/-- If `H` is not `n`-colorable and `G` is `n`-colorable, then `G` is `H.Free`. -/
+theorem free_of_colorable {α : Type*} {A : SimpleGraph α}
     (nhc : ¬A.Colorable n) (hc : G.Colorable n) : A.Free G := by
   contrapose! nhc with hc'
   rw [not_not] at hc'
   exact ⟨hc.some.comp hc'.some⟩
 
-lemma Colorable.map {β : Type*} (f : V ↪ β) [NeZero n] (hc : G.Colorable n) :
+/-- If `G` is `n`-colorable, then mapping the vertices of `G` produces an  `n`-colorable simple
+graph. -/
+theorem Colorable.map {β : Type*} (f : V ↪ β) [NeZero n] (hc : G.Colorable n) :
     (G.map f).Colorable n := by
   letI := Classical.propDecidable
   use fun b ↦ if h : ∃ v, f v = b then hc.some h.choose else default
@@ -38,8 +41,10 @@ lemma Colorable.map {β : Type*} (f : V ↪ β) [NeZero n] (hc : G.Colorable n) 
   rw [← hb₁_choose, ← hb₂_choose] at hne
   simpa [hb₁, hb₂, hb₁_choose, hb₂_choose] using hc.some.valid hadj
 
-lemma chromaticNumber_eq_iff_colorable_not_colorable :
-    G.chromaticNumber = n+1 ↔ G.Colorable (n+1) ∧ ¬G.Colorable n := by
+/-- If the chromatic number of `G` is `n + 1`, then `G` is colorable in no fewer than `n + 1`
+colors. -/
+theorem chromaticNumber_eq_iff_colorable_not_colorable :
+    G.chromaticNumber = n + 1 ↔ G.Colorable (n + 1) ∧ ¬G.Colorable n := by
   rw [eq_iff_le_not_lt, not_lt, ENat.add_one_le_iff (ENat.coe_ne_top n), ← not_le,
     chromaticNumber_le_iff_colorable, ← Nat.cast_add_one, chromaticNumber_le_iff_colorable]
 
