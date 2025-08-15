@@ -137,18 +137,17 @@ end Support
 
 section Map
 
-variable [Fintype V] [DecidableEq V] {W : Type*} [Fintype W] [DecidableEq W]
+variable [Fintype V] {W : Type*} [Fintype W] [DecidableEq W]
 
-@[simp]
-theorem card_edgeFinset_map (G : SimpleGraph V) [DecidableRel G.Adj] (f : V ↪ W) :
+theorem edgeFinset_map_eq_map (f : V ↪ W) (G : SimpleGraph V) [DecidableRel G.Adj] :
+    (G.map f).edgeFinset = G.edgeFinset.map f.sym2Map := by
+  rw [Finset.map_eq_image, ← Set.toFinset_image, Set.toFinset_inj]
+  exact G.edgeSet_map_eq_image f
+
+theorem card_edgeFinset_map (f : V ↪ W) (G : SimpleGraph V) [DecidableRel G.Adj] :
     #(G.map f).edgeFinset = #G.edgeFinset := by
-  conv_lhs =>
-    rw [← card_edgeFinset_induce_support]
-  conv_rhs =>
-    rw [← card_edgeFinset_induce_support]
-  apply Iso.card_edgeFinset_eq
-  rw [support_map_eq_image]
-  apply Iso.symm; use Equiv.Set.image f G.support f.injective, by simp
+  rw [edgeFinset_map_eq_map]
+  exact G.edgeFinset.card_map f.sym2Map
 
 end Map
 
