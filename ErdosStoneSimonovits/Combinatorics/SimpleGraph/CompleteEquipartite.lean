@@ -27,12 +27,8 @@ abbrev completeEquipartiteGraph (r t : ℕ) : SimpleGraph (Fin r × Fin t) :=
 The difference is that the former vertices are a product type whereas the latter vertices are a
 *dependent* product type. -/
 def completeEquipartiteGraph.completeMultipartiteGraph :
-    completeEquipartiteGraph r t ≃g completeMultipartiteGraph (Function.const (Fin r) (Fin t)) where
-  toFun := fun (v₁, v₂) ↦ ⟨v₁, v₂, v₂.is_lt⟩
-  invFun := by simpa using fun ⟨v₁, v₂⟩ ↦ ⟨v₁, v₂, v₂.is_lt⟩
-  left_inv v := by simp
-  right_inv v := by simp
-  map_rel_iff' := by simp
+    completeEquipartiteGraph r t ≃g completeMultipartiteGraph (Function.const (Fin r) (Fin t)) :=
+  { (Equiv.sigmaEquivProd (Fin r) (Fin t)).symm with map_rel_iff' := by simp }
 
 lemma completeEquipartiteGraph_adj {v w} :
   (completeEquipartiteGraph r t).Adj v w ↔ v.1 ≠ w.1 := by rfl
