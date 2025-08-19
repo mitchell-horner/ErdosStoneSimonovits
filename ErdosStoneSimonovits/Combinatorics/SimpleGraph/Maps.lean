@@ -6,7 +6,7 @@ namespace SimpleGraph
 
 variable {V W : Type*} (G : SimpleGraph V)
 
-theorem edgeSet_map_eq_image (f : V ↪ W) (G : SimpleGraph V) :
+theorem edgeSet_map (f : V ↪ W) (G : SimpleGraph V) :
     (G.map f).edgeSet = f.sym2Map '' G.edgeSet := by
   ext v
   induction v
@@ -20,7 +20,7 @@ theorem edgeSet_map_eq_image (f : V ↪ W) (G : SimpleGraph V) :
     rw [Embedding.sym2Map_apply, Sym2.map_pair_eq, Sym2.eq_iff] at he
     exact he.elim (fun ⟨h, h'⟩ ↦ ⟨_, _, hadj, h, h'⟩) (fun ⟨h', h⟩ ↦ ⟨_, _, hadj.symm, h, h'⟩)
 
-theorem support_map_eq_image (f : V ↪ W) : (G.map f).support = f '' G.support := by
+theorem support_map (f : V ↪ W) : (G.map f).support = f '' G.support := by
   ext; simp [mem_support]; tauto
 
 end SimpleGraph
