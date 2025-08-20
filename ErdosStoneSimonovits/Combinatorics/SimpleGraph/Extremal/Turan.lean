@@ -39,8 +39,7 @@ theorem extremalNumber_top :
   conv =>
     enter [1, 1]
     rw [← Fintype.card_fin n]
-  symm
-  exact card_edgeFinset_of_isExtremal_free isExtremal_top_free_turanGraph
+  exact (card_edgeFinset_of_isExtremal_free isExtremal_top_free_turanGraph).symm
 
 /-- The `turanGraph` is, up to isomorphism, the unique extremal graph forbidding `⊤`.
 
