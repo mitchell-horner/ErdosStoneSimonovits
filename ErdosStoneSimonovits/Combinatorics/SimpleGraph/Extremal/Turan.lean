@@ -22,20 +22,20 @@ theorem top_free_iff_cliqueFree :
 variable [Fintype V] [DecidableRel G.Adj] [Nontrivial α]
 
 lemma isExtremal_top_free_iff_isTuranMaximal :
-    G.IsExtremal (⊤ : SimpleGraph α).Free ↔ G.IsTuranMaximal (card α-1) := by
+    G.IsExtremal (⊤ : SimpleGraph α).Free ↔ G.IsTuranMaximal (card α - 1) := by
   simp_rw [IsTuranMaximal, IsExtremal,
     Nat.sub_one_add_one Fintype.card_ne_zero, top_free_iff_cliqueFree]
 
 lemma isExtremal_top_free_turanGraph :
-    (turanGraph n (card α-1)).IsExtremal (⊤ : SimpleGraph α).Free := by
-    rw [isExtremal_top_free_iff_isTuranMaximal]
-    exact isTuranMaximal_turanGraph (Nat.sub_pos_iff_lt.mpr Fintype.one_lt_card)
+    (turanGraph n (card α - 1)).IsExtremal (⊤ : SimpleGraph α).Free := by
+  rw [isExtremal_top_free_iff_isTuranMaximal]
+  exact isTuranMaximal_turanGraph (Nat.sub_pos_iff_lt.mpr Fintype.one_lt_card)
 
 /-- The extremal numbers of `⊤` are equal to the number of edges in `turanGraph`.
 
 This is a corollary of **Turán's theorem**. See `SimpleGraph.isTuranMaximal_turanGraph`. -/
 theorem extremalNumber_top :
-    extremalNumber n (⊤ : SimpleGraph α) = #(turanGraph n (card α-1)).edgeFinset := by
+    extremalNumber n (⊤ : SimpleGraph α) = #(turanGraph n (card α - 1)).edgeFinset := by
   conv =>
     enter [1, 1]
     rw [← Fintype.card_fin n]
@@ -47,6 +47,6 @@ theorem extremalNumber_top :
 This is **Turán's theorem**. See `SimpleGraph.isTuranMaximal_iff_nonempty_iso_turanGraph`. -/
 theorem card_edgeFinset_eq_extremalNumber_top_iff_iso_turanGraph :
     (⊤ : SimpleGraph α).Free G ∧ #G.edgeFinset = extremalNumber (card V) (⊤ : SimpleGraph α)
-      ↔ Nonempty (G ≃g turanGraph (card V) (card α-1)) := by
+      ↔ Nonempty (G ≃g turanGraph (card V) (card α - 1)) := by
   rw [← isTuranMaximal_iff_nonempty_iso_turanGraph (Nat.sub_pos_iff_lt.mpr one_lt_card),
     ← isExtremal_top_free_iff_isTuranMaximal, isExtremal_free_iff]
