@@ -11,7 +11,7 @@ lemma turanGraph_adj {n r v w} :
 
 variable {V : Type*} {G : SimpleGraph V} {n : ℕ} {α : Type*} [Fintype α]
 
-/-- A simple graph does not contain `⊤` on `n` vertices if and only if it has no `n`-cliques. -/
+/-- A simple graph does not contain `⊤ : SimpleGraph α` iff it has no `card α`-cliques. -/
 theorem top_free_iff_cliqueFree :
     (⊤ : SimpleGraph α).Free G ↔ G.CliqueFree (card α) := by
   rw [← not_iff_not, not_free, cliqueFree_iff, not_isEmpty_iff,
@@ -44,7 +44,8 @@ theorem extremalNumber_top :
 
 /-- The `turanGraph` is, up to isomorphism, the unique extremal graph forbidding `⊤`.
 
-This is **Turán's theorem**. See `SimpleGraph.isTuranMaximal_iff_nonempty_iso_turanGraph`. -/
+This is a corollary of **Turán's theorem**.
+See `SimpleGraph.isTuranMaximal_iff_nonempty_iso_turanGraph`. -/
 theorem card_edgeFinset_eq_extremalNumber_top_iff_iso_turanGraph :
     (⊤ : SimpleGraph α).Free G ∧ #G.edgeFinset = extremalNumber (card V) (⊤ : SimpleGraph α)
       ↔ Nonempty (G ≃g turanGraph (card V) (card α - 1)) := by
