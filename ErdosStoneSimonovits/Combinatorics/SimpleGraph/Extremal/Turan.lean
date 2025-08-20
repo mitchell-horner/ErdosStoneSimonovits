@@ -9,7 +9,7 @@ open Finset Fintype
 lemma turanGraph_adj {n r v w} :
   (turanGraph n r).Adj v w ↔ v % r ≠ w % r := by rfl
 
-variable {V : Type*} {G : SimpleGraph V} (n : ℕ) (α : Type*) [Fintype α]
+variable {V : Type*} {G : SimpleGraph V} {n : ℕ} {α : Type*} [Fintype α]
 
 /-- A simple graph does not contain `⊤` on `n` vertices if and only if it has no `n`-cliques. -/
 theorem top_free_iff_cliqueFree :
@@ -40,7 +40,7 @@ theorem extremalNumber_top :
     enter [1, 1]
     rw [← Fintype.card_fin n]
   symm
-  exact card_edgeFinset_of_isExtremal_free (isExtremal_top_free_turanGraph n α)
+  exact card_edgeFinset_of_isExtremal_free isExtremal_top_free_turanGraph
 
 /-- The `turanGraph` is, up to isomorphism, the unique extremal graph forbidding `⊤`.
 
