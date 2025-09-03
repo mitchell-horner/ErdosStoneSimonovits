@@ -16,7 +16,7 @@ variable {V : Type*} [Fintype V] {G : SimpleGraph V} [DecidableEq V] [DecidableR
 
 namespace ErdosStone
 
-variable {ε : ℝ} {r t t' : ℕ} (A : G.completeEquipartiteSubgraph r t')
+variable {ε : ℝ} {r t t' : ℕ} (A : G.CompleteEquipartiteSubgraph r t')
 
 /-- `filterAdjComplVerts` is the set of vertices in the complement of a complete equipartite
 subgraph, in `r` parts each of size `t'`, adjacent to at least `t` vertices in each part of the
@@ -24,7 +24,7 @@ complete equipartite subgraph.
 
 This is an auxiliary definition for the **Erdős-Stone theorem**. -/
 abbrev filterAdjComplVerts (t : ℕ) : Finset V :=
-  { v ∈ A.vertsᶜ | ∀ i : Fin r, ∃ s : (A.parts i).val.powersetCard t, ∀ w ∈ s.val, G.Adj v w }
+  { v ∈ A.vertsᶜ | ∀ i : Fin r, ∃ s ∈ (A.parts i).powersetCard t, ∀ w ∈ s.val, G.Adj v w }
 
 lemma filterAdjComplVerts_subset_compl_verts : filterAdjComplVerts A t ⊆ A.vertsᶜ :=
   filter_subset _ A.vertsᶜ
@@ -66,10 +66,8 @@ lemma degree_between_verts_lt_of_mem_sdiff {v : V} (hv : v ∈ A.vertsᶜ \ filt
     exact sum_le_sum (fun _ _ ↦ card_filter_le _ _)
   · contrapose! hs
     obtain ⟨s, hs⟩ := powersetCard_nonempty.mpr hs
-    have hs' : s ∈ (A.parts i).val.powersetCard t :=
-      powersetCard_mono (filter_subset _ (A.parts i).val) hs
-    use ⟨s, hs'⟩
-    intro w hw
+    have hs' : s ∈ (A.parts i).powersetCard t := powersetCard_mono (filter_subset _ _) hs
+    refine ⟨s, hs', fun w hw ↦ ?_⟩
     obtain ⟨_, hadj, _⟩ := by
       rw [mem_powersetCard] at hs
       apply hs.1 at hw
@@ -129,13 +127,14 @@ lemma mul_le_card_aux_mul (hr : 0 < r) (hδ : G.minDegree ≥ (1 - 1 / r + ε) *
 adjacent to `w`.
 
 This is an auxiliary definition for the **Erdős-Stone theorem**. -/
-noncomputable abbrev filterAdjComplVerts.Pi :
-    filterAdjComplVerts A t → Π i : Fin r, powersetCard t (A.parts i).val :=
-  fun ⟨_, h⟩ i ↦ (Multiset.of_mem_filter h i).choose
+noncomputable abbrev filterAdjComplVerts.pi :
+    filterAdjComplVerts A t → Π i : Fin r, (A.parts i).powersetCard t :=
+  fun ⟨_, h⟩ i ↦ ⟨(Multiset.of_mem_filter h i).choose,
+    (Multiset.of_mem_filter h i).choose_spec.left⟩
 
-lemma filterAdjComplVerts.Pi.mem_val (w : filterAdjComplVerts A t) (i : Fin r) :
-    ∀ v ∈ (filterAdjComplVerts.Pi A w i).val, G.Adj w v :=
-  (Multiset.of_mem_filter w.prop i).choose_spec
+lemma filterAdjComplVerts.pi.mem_val (w : filterAdjComplVerts A t) (i : Fin r) :
+    ∀ v ∈ (filterAdjComplVerts.pi A w i).val, G.Adj w v :=
+  (Multiset.of_mem_filter w.prop i).choose_spec.right
 
 /-- If `#filterAdjComplVerts` is sufficently large, then there exist at least `t` vertices
 adjacent to `t` vertices in each `A.parts`.
@@ -144,12 +143,12 @@ This is an auxiliary definition for the **Erdős-Stone theorem**. -/
 lemma exists_pi_powersetCard_completeEquipartiteSubgraph_parts
     (hr : 0 < r) (ht_lt_t' : t < t') (hδ : G.minDegree ≥ (1 - 1 / r + ε) * card V)
     (hx : (t'.choose t ^ r * t + r * t') * (t' - t) ≤ card V * (t' * r * ε - t)) :
-    ∃ (s : univ.powersetCard t) (y : Π i : Fin r, powersetCard t (A.parts i).val),
-      ∀ v₁ ∈ s.val, ∀ i, ∀ v₂ ∈ (y i).val, G.Adj v₁ v₂ := by
+    ∃ (s : Finset V) (y : Π i : Fin r, (A.parts i).powersetCard t),
+      #s = t ∧ ∀ v₁ ∈ s.val, ∀ i, ∀ v₂ ∈ (y i).val, G.Adj v₁ v₂ := by
   -- there exists at least `t` vertices ...
-  have ⟨y, hy⟩ : ∃ y : Π i : Fin r, powersetCard t (A.parts i).val,
-      t ≤ #(univ.filter (filterAdjComplVerts.Pi A · = y)) := by
-    have : Nonempty (Π i : Fin r, powersetCard t (A.parts i).val) := by
+  have ⟨y, hy⟩ : ∃ y : Π i : Fin r, (A.parts i).powersetCard t,
+      t ≤ #(univ.filter (filterAdjComplVerts.pi A · = y)) := by
+    have : Nonempty (Π i : Fin r, (A.parts i).powersetCard t) := by
       rw [Classical.nonempty_pi]
       conv =>
         enter [i]
@@ -165,15 +164,13 @@ lemma exists_pi_powersetCard_completeEquipartiteSubgraph_parts
     · exact (mul_le_card_aux_mul A hr hδ (mod_cast hx))
     · rwa [← @Nat.cast_lt ℝ, ← sub_pos] at ht_lt_t'
   -- ... adjacent to `t` vertices in each `A.parts`
-  have ⟨s', hs'⟩ := exists_subset_card_eq hy
-  refine ⟨⟨s'.map (Function.Embedding.subtype _),
-    mem_powersetCard_univ.mpr ((card_map _).trans hs'.2)⟩, y, ?_⟩
-  intro v hv i w hw
+  have ⟨s', h_subset, hs'⟩ := exists_subset_card_eq hy
+  refine ⟨s'.map (.subtype _), y, by simp [hs'], fun v hv i w hw ↦ ?_⟩
   obtain ⟨v', hv', hv⟩ := Finset.mem_map.mp hv
   rw [Function.Embedding.coe_subtype] at hv
   rw [← hv]
-  apply filterAdjComplVerts.Pi.mem_val A v' i w
-  apply hs'.1 at hv'
+  apply filterAdjComplVerts.pi.mem_val A v' i w
+  apply h_subset at hv'
   rw [mem_filter] at hv'
   rwa [← hv'.2] at hw
 
@@ -254,24 +251,22 @@ theorem completeEquipartiteGraph_isContained_of_minDegree {ε : ℝ} (hε : 0 < 
     obtain ⟨A⟩ := completeEquipartiteGraph_isContained_iff.mp ih
       -- find `t` vertices not in `A` adjacent to `t` vertices in each `A.parts` using the
       -- pigeonhole principle
-    obtain ⟨s, y, hs⟩ := by
+    obtain ⟨s, y, hs, hadj⟩ := by
       apply ErdosStone.exists_pi_powersetCard_completeEquipartiteSubgraph_parts A hr ht_lt_t' hδ
       rw [← div_le_iff₀ (sub_pos_of_lt ht_lt_t'rε)]
       trans (n : ℝ)
       · exact (Nat.le_ceil _).trans (Nat.cast_le.mpr <| le_max_right n' _)
       · exact_mod_cast h_card.le
     -- identify the `t` vertices in each `A.parts` as a `completeEquipartiteSubgraph r t` in `A`
-    let A' : G.completeEquipartiteSubgraph r t := by
-      refine ⟨fun i ↦ ⟨(y i).val, ?_⟩, ?_⟩
-      · have hyi := mem_powersetCard.mp (y i).prop
-        exact mem_powersetCard_univ.mpr hyi.2
-      · intro i j h v hv w hw
-        have hyi := mem_powersetCard.mp (y i).prop
-        have hyj := mem_powersetCard.mp (y j).prop
-        exact A.Adj h v (hyi.1 hv) w (hyj.1 hw)
+    let A' : G.CompleteEquipartiteSubgraph r t := by
+      refine ⟨fun i ↦ (y i).val, fun i ↦ (mem_powersetCard.mp (y i).prop).right,
+        fun i j h v hv w hw ↦ ?_⟩
+      have hyi := mem_powersetCard.mp (y i).prop
+      have hyj := mem_powersetCard.mp (y j).prop
+      exact A.Adj h v (hyi.1 hv) w (hyj.1 hw)
     -- identify the `t` vertices not in `A` and the `completeEquipartiteSubgraph r t` in `A`
     -- as a `completeEquipartiteSubgraph (r + 1) t` in `G`
-    exact completeEquipartiteGraph_succ_isContained_iff.mpr ⟨A', s, hs⟩
+    exact completeEquipartiteGraph_succ_isContained_iff.mpr ⟨A', s, hs, hadj⟩
 
 /-- Repeatedly remove minimal degree vertices until `(G.induce s).minDegree` is at least `c * #s`
 and count the maximal possible edges removed in the process.
