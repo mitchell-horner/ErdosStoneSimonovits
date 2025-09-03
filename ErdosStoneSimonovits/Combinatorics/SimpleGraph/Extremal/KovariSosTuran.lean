@@ -45,14 +45,13 @@ lemma card_filterNeighborFinsetSubsets_le [Nonempty β] (h : (completeBipartiteG
   simp_rw [card_filter _, sum_product, ← card_filter, ← @card_univ V, ← card_powersetCard,
     ← nsmul_eq_mul, ← sum_const, ← Nat.cast_pred card_pos, ← Nat.cast_sum, Nat.cast_le]
   apply sum_le_sum
-  intro t ht_mem
+  intro t ht_card
+  rw [mem_powersetCard_univ] at ht_card
   contrapose! h
   have ⟨t', ht'_sub, ht'_card⟩ := exists_subset_card_eq h
   rw [← Nat.pred_eq_sub_one, Nat.succ_pred_eq_of_pos card_pos] at ht'_card
-  have ht'_mem := mem_powersetCard_univ.mpr ht'_card
   rw [not_free, completeBipartiteGraph_isContained_iff]
-  use ⟨t, ht_mem⟩, ⟨t', ht'_mem⟩
-  intro a ha b hb
+  refine ⟨t, ht_card, t', ht'_card, fun a ha b hb ↦ ?_⟩
   apply (mem_filter.mp (ht'_sub hb)).2 at ha
   exact ((G.mem_neighborFinset b a).mp ha).symm
 
