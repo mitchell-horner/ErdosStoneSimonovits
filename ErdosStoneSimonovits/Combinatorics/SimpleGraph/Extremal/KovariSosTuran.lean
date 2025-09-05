@@ -17,75 +17,80 @@ This is an auxiliary definition for the **Kővári–Sós–Turán theorem**. -/
 noncomputable abbrev bound (n s t : ℕ) : ℝ :=
   (t - 1) ^ (1 / s : ℝ) * n ^ (2 - 1 / s : ℝ) / 2 + n * (s - 1) / 2
 
-lemma bound_nonneg {n s t : ℕ} (hs : 1 ≤ s) (ht : s ≤ t) : 0 ≤ bound n s t := by
+theorem bound_nonneg {n s t : ℕ} (hs : 1 ≤ s) (ht : s ≤ t) : 0 ≤ bound n s t := by
   apply add_nonneg <;> apply div_nonneg _ zero_le_two <;> apply mul_nonneg
-  · exact Real.rpow_nonneg (sub_nonneg_of_le <| mod_cast hs.trans ht) (1 / s : ℝ)
-  · exact Real.rpow_nonneg n.cast_nonneg (2 - 1 / s : ℝ)
+  · exact Real.rpow_nonneg (sub_nonneg_of_le (mod_cast hs.trans ht)) (1 / s : ℝ)
+  · exact Real.rpow_nonneg (Nat.cast_nonneg n) (2 - 1 / s : ℝ)
   · exact Nat.cast_nonneg n
   · exact sub_nonneg_of_le (mod_cast hs)
 
 variable [DecidableEq V]
 
-/-- `filterNeighborFinsetSubsets` is the finset of pairs `(t, v)` such that `t : Finset V` is an
-`n`-sized subset of the neighbor finset of `v : V` in `G : SimpleGraph V`.
+/-- `filterPowersetCardSubsetNeighborFinset` is the finset of pairs `(t, v)` such that
+`t : Finset V` is an `n`-sized subset of the neighbor finset of `v : V` in `G : SimpleGraph V`.
 
 This is an auxiliary definition for the **Kővári–Sós–Turán theorem**. -/
-abbrev filterNeighborFinsetSubsets (G : SimpleGraph V) [DecidableRel G.Adj] (n : ℕ) :=
+abbrev filterPowersetCardSubsetNeighborFinset (G : SimpleGraph V) [DecidableRel G.Adj] (n : ℕ) :=
   (univ.powersetCard n ×ˢ univ).filter fun (t, v) ↦ t ⊆ G.neighborFinset v
 
 variable {G : SimpleGraph V} [DecidableRel G.Adj]
 
-/-- If `G` is `(completeBipartiteGraph α β).Free`, then `#filterNeighborFinsetSubsets` is at
-most the number of ways to choose `card α` vertices from `card V` vertices `card β - 1` times.
+/-- If `G` is `(completeBipartiteGraph α β).Free`, then `#filterPowersetCardSubsetNeighborFinset`
+is at most the number of ways to choose `card α` vertices from `card V` vertices `card β - 1` times.
 
 This is an auxiliary lemma for the **Kővári–Sós–Turán theorem**. -/
-lemma card_filterNeighborFinsetSubsets_le [Nonempty β] (h : (completeBipartiteGraph α β).Free G) :
-    #(filterNeighborFinsetSubsets G (card α))
+lemma card_filterPowersetCardSubsetNeighborFinset_le [Nonempty β]
+    (h : (completeBipartiteGraph α β).Free G) :
+    #(filterPowersetCardSubsetNeighborFinset G (card α))
       ≤ (((card V).choose (card α)) * (card β - 1) : ℝ) := by
   simp_rw [card_filter _, sum_product, ← card_filter, ← @card_univ V, ← card_powersetCard,
     ← nsmul_eq_mul, ← sum_const, ← Nat.cast_pred card_pos, ← Nat.cast_sum, Nat.cast_le]
-  apply sum_le_sum
-  intro t ht_card
+  refine sum_le_sum (fun t ht_card ↦ ?_)
   rw [mem_powersetCard_univ] at ht_card
   contrapose! h
   have ⟨t', ht'_sub, ht'_card⟩ := exists_subset_card_eq h
   rw [← Nat.pred_eq_sub_one, Nat.succ_pred_eq_of_pos card_pos] at ht'_card
   rw [not_free, completeBipartiteGraph_isContained_iff]
   refine ⟨t, ht_card, t', ht'_card, fun a ha b hb ↦ ?_⟩
-  apply (mem_filter.mp (ht'_sub hb)).2 at ha
-  exact ((G.mem_neighborFinset b a).mp ha).symm
+  apply ht'_sub at hb
+  rw [mem_filter] at hb
+  apply hb.2 at ha
+  rw [mem_neighborFinset] at ha
+  exact ha.symm
 
 /-- If the average degree of vertices in `G` is at least `card α - 1`, then it follows from a
-special case of Jensen's inequality for `Nat.choose` that `#filterNeighborFinsetSubsets` is at
-least `card α` times the desending pochhammer function evaluated at the average divided by
-`(card α).factorial`.
+special case of *Jensen's inequality* for `Nat.choose` that
+`#filterPowersetCardSubsetNeighborFinset` is at least `card α` times the desending pochhammer
+function evaluated at the average divided by `(card α).factorial`.
 
 This is an auxiliary lemma for the **Kővári–Sós–Turán theorem**. -/
-lemma le_card_filterNeighborFinsetSubsets [Nonempty V] [Nonempty α]
+lemma le_card_filterPowersetCardSubsetNeighborFinset [Nonempty V] [Nonempty α]
     (h_avg : card α - 1 ≤ (∑ v : V, G.degree v : ℝ) / card V) :
     ((card V)*((descPochhammer ℝ (card α)).eval
         ((∑ v, G.degree v : ℝ) / card V) / (card α).factorial) : ℝ)
-      ≤ #(filterNeighborFinsetSubsets G (card α)) := by
+      ≤ #(filterPowersetCardSubsetNeighborFinset G (card α)) := by
   simp_rw [card_filter _, sum_product_right, ← card_filter, powersetCard_eq_filter,
     filter_comm, powerset_univ, filter_subset_univ, ← powersetCard_eq_filter,
     card_powersetCard, card_neighborFinset_eq_degree, Nat.cast_sum,
     ← le_inv_mul_iff₀ (mod_cast card_pos : 0 < (card V : ℝ)), mul_sum,
     div_eq_mul_inv _ (card V : ℝ), mul_comm _ (card V : ℝ)⁻¹, mul_sum]
-  apply descPochhammer_eval_div_factorial_le_sum_choose (by positivity) _ _ (by simp) (by simp)
-  rwa [div_eq_inv_mul, mul_sum] at h_avg
+  rw [div_eq_inv_mul, mul_sum] at h_avg
+  exact descPochhammer_eval_div_factorial_le_sum_choose
+    (by positivity) _ _ (by simp) (by simp) h_avg
 
 /-- If the average degree of vertices in `G` is at least `card α - 1` and `G` is
 `(completeBipartiteGraph α β).Free`, then `G` has at most `bound` edges.
 
 This is an auxiliary lemma for the **Kővári–Sós–Turán theorem**. -/
-lemma card_edgeFinset_le_bound [Nonempty V] [Nonempty α] [Nonempty β]
+theorem card_edgeFinset_le_bound [Nonempty V] [Nonempty α] [Nonempty β]
     (h_avg : card α - 1 ≤ (∑ v : V, G.degree v : ℝ) / card V)
     (h_free : (completeBipartiteGraph α β).Free G) :
     #G.edgeFinset ≤ bound (card V) (card α) (card β) := by
   suffices h : card V * (2 * #G.edgeFinset / card V - card α + 1) ^ card α / (card α).factorial
       ≤ ((card V ^ card α / (card α).factorial) * (card β - 1) : ℝ) by
-    have : 0 ≤ (card β - 1 : ℝ) := sub_nonneg_of_le (Nat.one_le_cast.mpr card_pos)
-    have : 0 ≤ (2 * #G.edgeFinset / card V - card α + 1 : ℝ) := by
+    have h_card_sub_one_nonneg : 0 ≤ (card β - 1 : ℝ) :=
+      sub_nonneg_of_le (Nat.one_le_cast.mpr card_pos)
+    have h_avg' : 0 ≤ (2 * #G.edgeFinset / card V - card α + 1 : ℝ) := by
       rwa [← Nat.cast_sum, sum_degrees_eq_twice_card_edges,
         Nat.cast_mul, Nat.cast_two, ← sub_nonneg, ← sub_add] at h_avg
     -- rearrange expression for `bound`
@@ -105,17 +110,17 @@ lemma card_edgeFinset_le_bound [Nonempty V] [Nonempty α] [Nonempty β]
       mul_comm (card α - 1 : ℝ) _, ← mul_assoc, ← Real.rpow_add (by positivity), ← add_assoc,
       add_neg_cancel, zero_add, Real.rpow_one, inv_eq_one_div] at h
   -- double-counting `(t, v) ↦ t ⊆ G.neighborSet v`
-  trans (#(filterNeighborFinsetSubsets G (card α)) : ℝ)
+  trans (#(filterPowersetCardSubsetNeighborFinset G (card α)) : ℝ)
   -- counting `t`
   · trans (card V)*((descPochhammer ℝ (card α)).eval
         ((∑ v, G.degree v : ℝ)/card V)/(card α).factorial)
     · rw [← Nat.cast_two, ← Nat.cast_mul, ← sum_degrees_eq_twice_card_edges, Nat.cast_sum,
         mul_div, div_le_div_iff_of_pos_right (by positivity), mul_le_mul_left (by positivity)]
       exact pow_le_descPochhammer_eval h_avg
-    · exact le_card_filterNeighborFinsetSubsets h_avg
+    · exact le_card_filterPowersetCardSubsetNeighborFinset h_avg
   -- counting `v`
   · trans ((card V).choose (card α))*(card β - 1)
-    · exact card_filterNeighborFinsetSubsets_le h_free
+    · exact card_filterPowersetCardSubsetNeighborFinset_le h_free
     · apply mul_le_mul_of_nonneg_right (Nat.choose_le_pow_div (card α) (card V))
       exact sub_nonneg_of_le (mod_cast Nat.succ_le_of_lt card_pos)
 
@@ -132,12 +137,13 @@ theorem card_edgeFinset_le_of_completeBipartiteGraph_free
     (h_free : (completeBipartiteGraph α β).Free G) :
     #G.edgeFinset ≤ ((card β - 1) ^ (1 / card α : ℝ) * card V ^ (2 - 1 / card α : ℝ) / 2
       + card V * (card α - 1) / 2 : ℝ) := by
-  haveI : Nonempty β := card_pos_iff.mp (card_pos.trans_le hcard_le)
+  have : Nonempty β := card_pos_iff.mp (card_pos.trans_le hcard_le)
   cases isEmpty_or_nonempty V
-  · have h_two_sub_one_div_ne_zero : 2 - (card α : ℝ)⁻¹ ≠ 0 := by
-      apply sub_ne_zero_of_ne ∘ ne_of_gt
+  · have h_two_sub_inv_card_ne_zero : 2 - (card α : ℝ)⁻¹ ≠ 0 := by
+      apply sub_ne_zero_of_ne
+      apply ne_of_gt
       exact (card α).cast_inv_le_one.trans_lt one_lt_two
-    simp [h_two_sub_one_div_ne_zero]
+    simp [h_two_sub_inv_card_ne_zero]
   · rcases lt_or_ge (∑ v, G.degree v : ℝ) (card V * (card α - 1) : ℝ) with h_sum_lt | h_avg
     -- if avg degree less than `card a - 1`
     · rw [← Nat.cast_sum, sum_degrees_eq_twice_card_edges,
@@ -157,13 +163,13 @@ theorem card_edgeFinset_le_of_completeBipartiteGraph_free
 `(card β - 1) ^ (1 / card α) * n ^ (2 - 1 / card α) / 2 + n * (card α - 1) / 2`.
 
 This is a corollary of the **Kővári–Sós–Turán theorem**. -/
-theorem extremalNumber_completeBipartiteGraph_le (n : ℕ) [Nonempty α] (hcard_le : card α ≤ card β) :
-  extremalNumber n (completeBipartiteGraph α β)
-    ≤ ((card β - 1) ^ (1 / card α : ℝ) * n ^ (2 - 1 / card α : ℝ) / 2
+theorem extremalNumber_completeBipartiteGraph_le (n : ℕ) [Nonempty α] (h_card_le : card α ≤ card β) :
+  extremalNumber n (completeBipartiteGraph α β) ≤
+    ((card β - 1) ^ (1 / card α : ℝ) * n ^ (2 - 1 / card α : ℝ) / 2
       + n * (card α - 1) / 2 : ℝ) := by
-  rw [← Fintype.card_fin n, extremalNumber_le_iff_of_nonneg (completeBipartiteGraph α β)
-    <| KovariSosTuran.bound_nonneg card_pos hcard_le]
+  rw [← Fintype.card_fin n,
+    extremalNumber_le_iff_of_nonneg _ (KovariSosTuran.bound_nonneg card_pos h_card_le)]
   intro G _ h_free
-  exact card_edgeFinset_le_of_completeBipartiteGraph_free hcard_le h_free
+  exact card_edgeFinset_le_of_completeBipartiteGraph_free h_card_le h_free
 
 end SimpleGraph
