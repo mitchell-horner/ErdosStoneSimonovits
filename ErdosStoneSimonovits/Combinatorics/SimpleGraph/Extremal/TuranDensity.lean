@@ -38,6 +38,28 @@ lemma antitoneOn_extremalNumber_div_choose_two (H : SimpleGraph W) :
     simpa [edgeFinset_deleteIncidenceSet_eq_filter]
       using card_edgeFinset_deleteIncidenceSet_le_extremalNumber h v
 
+lemma bbdBelow_extremalNumber_div_choose_two (H : SimpleGraph W) :
+    BddBelow { (extremalNumber n H / n.choose 2 : ℝ) | n ∈ Set.Ici 2 } := by
+  refine ⟨0, fun x ⟨n, hn, hx⟩ ↦ ?_⟩
+  rw [← hx]
+  positivity
+
+lemma tendsto_extremalNumber_div_choose_two (H : SimpleGraph W) :
+    Tendsto (fun n ↦ (extremalNumber n H / n.choose 2 : ℝ)) atTop
+      (𝓝 (sInf { (extremalNumber n H / n.choose 2 : ℝ) | n ∈ Set.Ici 2 })) := by
+  let f := fun n ↦ (extremalNumber n H / n.choose 2 : ℝ)
+  have hf_Ici : f '' (Set.Ici 2) = Set.range (fun n ↦ f (n + 2)) := by
+    refine Set.ext fun x ↦ ⟨fun ⟨n, hn, hfn⟩ ↦ ⟨n - 2, ?_⟩,
+      fun ⟨n, hfn⟩ ↦ ⟨n + 2, Nat.le_add_left 2 n, hfn⟩⟩
+    rwa [← Nat.sub_add_cancel hn] at hfn
+  suffices h : Tendsto (fun n ↦ f (n + 2)) atTop (𝓝 (⨅ n, f (n + 2))) by
+    rwa [tendsto_add_atTop_iff_nat 2, ← sInf_range, ← hf_Ici, Set.image] at h
+  apply tendsto_atTop_ciInf
+  · rw [antitone_add_nat_iff_antitoneOn_nat_Ici]
+    exact antitoneOn_extremalNumber_div_choose_two H
+  · rw [← hf_Ici, Set.image]
+    exact bbdBelow_extremalNumber_div_choose_two H
+
 /-- The **Turán density** of a simple graph `H` is the limit of `extremalNumber n H / n.choose 2`
 as `n` approaches `∞`.
 
@@ -45,21 +67,20 @@ See `SimpleGraph.tendsto_turanDensity` for proof of existence. -/
 noncomputable def turanDensity (H : SimpleGraph W) :=
   limUnder atTop fun n ↦ (extremalNumber n H / n.choose 2 : ℝ)
 
+theorem turanDensity_eq_sInf (H : SimpleGraph W) :
+    turanDensity H = sInf { (extremalNumber n H / n.choose 2 : ℝ) | n ∈ Set.Ici 2 } :=
+  (tendsto_extremalNumber_div_choose_two H).limUnder_eq
+
+theorem turanDensity_le_extremalNumber_div_choose_two (H : SimpleGraph W) {n : ℕ} (hn : n ≥ 2) :
+    turanDensity H ≤ extremalNumber n H / n.choose 2 := by
+  rw [turanDensity_eq_sInf H]
+  exact csInf_le (bbdBelow_extremalNumber_div_choose_two H) ⟨n, hn, rfl⟩
+
 /-- The **Turán density** of a simple graph `H` is well-defined. -/
 theorem tendsto_turanDensity (H : SimpleGraph W) :
     Tendsto (fun n ↦ (extremalNumber n H / n.choose 2 : ℝ)) atTop (𝓝 (turanDensity H)) := by
-  let f := fun n ↦ (extremalNumber n H / n.choose 2 : ℝ)
-  suffices h : ∃ x, Tendsto (fun n ↦ f (n + 2)) atTop (𝓝 x) by
-    obtain ⟨_, h⟩ := by simpa [tendsto_add_atTop_iff_nat 2] using h
-    simpa [← Tendsto.limUnder_eq h] using h
-  use ⨅ n, f (n + 2)
-  apply tendsto_atTop_ciInf
-  · rw [antitone_add_nat_iff_antitoneOn_nat_Ici]
-    exact antitoneOn_extremalNumber_div_choose_two H
-  · use 0
-    intro n ⟨_, hn⟩
-    rw [← hn]
-    positivity
+  rw [turanDensity_eq_sInf H]
+  exact tendsto_extremalNumber_div_choose_two H
 
 /-- `extremalNumber n H` is asymptotically equivalent to `turanDensity H * n.choose 2` as `n`
 approaches `∞`. -/
