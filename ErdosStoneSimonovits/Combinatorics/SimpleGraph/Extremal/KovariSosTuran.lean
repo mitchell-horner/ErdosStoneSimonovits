@@ -88,7 +88,7 @@ theorem card_edgeFinset_le_bound [Nonempty V] [Nonempty α] [Nonempty β]
     #G.edgeFinset ≤ bound (card V) (card α) (card β) := by
   suffices h : card V * (2 * #G.edgeFinset / card V - card α + 1) ^ card α / (card α).factorial
       ≤ ((card V ^ card α / (card α).factorial) * (card β - 1) : ℝ) by
-    have h_card_sub_one_nonneg : 0 ≤ (card β - 1 : ℝ) :=
+    have hcard_sub_one_nonneg : 0 ≤ (card β - 1 : ℝ) :=
       sub_nonneg_of_le (Nat.one_le_cast.mpr card_pos)
     have h_avg' : 0 ≤ (2 * #G.edgeFinset / card V - card α + 1 : ℝ) := by
       rwa [← Nat.cast_sum, sum_degrees_eq_twice_card_edges,
@@ -163,13 +163,13 @@ theorem card_edgeFinset_le_of_completeBipartiteGraph_free
 `(card β - 1) ^ (1 / card α) * n ^ (2 - 1 / card α) / 2 + n * (card α - 1) / 2`.
 
 This is a corollary of the **Kővári–Sós–Turán theorem**. -/
-theorem extremalNumber_completeBipartiteGraph_le (n : ℕ) [Nonempty α] (h_card_le : card α ≤ card β) :
+theorem extremalNumber_completeBipartiteGraph_le
+  (n : ℕ) [Nonempty α] (hcard_le : card α ≤ card β) :
   extremalNumber n (completeBipartiteGraph α β) ≤
-    ((card β - 1) ^ (1 / card α : ℝ) * n ^ (2 - 1 / card α : ℝ) / 2
-      + n * (card α - 1) / 2 : ℝ) := by
+    ((card β - 1) ^ (1 / card α : ℝ) * n ^ (2 - 1 / card α : ℝ) / 2 + n * (card α - 1) / 2 : ℝ) := by
   rw [← Fintype.card_fin n,
-    extremalNumber_le_iff_of_nonneg _ (KovariSosTuran.bound_nonneg card_pos h_card_le)]
+    extremalNumber_le_iff_of_nonneg _ (KovariSosTuran.bound_nonneg card_pos hcard_le)]
   intro G _ h_free
-  exact card_edgeFinset_le_of_completeBipartiteGraph_free h_card_le h_free
+  exact card_edgeFinset_le_of_completeBipartiteGraph_free hcard_le h_free
 
 end SimpleGraph
