@@ -91,8 +91,7 @@ theorem isEquivalent_extremalNumber (h : turanDensity H ≠ 0) :
   simp_rw [one_div_mul_cancel h, div_mul_div_comm, one_mul] at hπ
   have hz : ∀ᶠ (x : ℕ) in atTop, turanDensity H * x.choose 2 ≠ 0 := by
     rw [eventually_atTop]
-    use 2
-    intro n hn
+    refine ⟨2, fun n hn ↦ ?_⟩
     simp [h, Nat.choose_eq_zero_iff, hn]
   simpa [isEquivalent_iff_tendsto_one hz] using hπ
 
