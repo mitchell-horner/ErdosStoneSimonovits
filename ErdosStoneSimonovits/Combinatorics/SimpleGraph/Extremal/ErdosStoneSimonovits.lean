@@ -594,6 +594,23 @@ theorem isEquivalent_extremalNumber_of_chromaticNumber
   rw [← hπ_eq]
   exact isEquivalent_extremalNumber hπ_pos.ne'
 
+/-- If `G` has at least `(1 - 1 / r + o(1)) * (card V).choose 2` many edges, then `G`
+contains a copy of `H`.
+
+This is a corollary of the **Erdős-Stone-Simonovits theorem**. -/
+theorem isContained_of_card_edgeFinset_of_chromaticNumber
+    {r : ℕ} (hr_pos : 1 < r) (hχ : H.chromaticNumber = r + 1) {ε : ℝ} (hε_pos : 0 < ε) :
+    ∃ N, ∀ {V : Type*} [Fintype V] [DecidableEq V], N < card V →
+      ∀ {G : SimpleGraph V} [DecidableRel G.Adj],
+        #G.edgeFinset ≥ (1 - 1 / r + ε) * (card V).choose 2 → H ⊑ G := by
+  have hπ_eq : turanDensity H = 1 - 1 / r :=
+    turanDensity_eq_of_chromaticNumber (by positivity) hχ
+  have hπ_pos : 0 < turanDensity H := by
+    rw [hπ_eq, sub_pos, one_div]
+    exact inv_lt_one_of_one_lt₀ (mod_cast hr_pos)
+  rw [← hπ_eq]
+  exact isContained_of_card_edgeFinset H hε_pos
+
 end ErdosStoneSimonovits
 
 end SimpleGraph
