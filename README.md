@@ -117,9 +117,10 @@ Suppose $s$ and $t$ are natural numbers such that $1 \leq s \leq t$. The extrema
 $$\textrm{ex}(n, K_{s, t}) \leq \frac{1}{2}(t-1)^{1/s}n^{2-1/s}+\frac{1}{2}n(s-1).$$
 
 ```lean
-theorem extremalNumber_completeBipartiteGraph_le (n : ℕ) [Nonempty α] (hcard_le : card α ≤ card β) :
-  extremalNumber n (completeBipartiteGraph α β)
-    ≤ ((card β-1)^(1/card α : ℝ)*n^(2-1/card α : ℝ)/2 + n*(card α-1)/2 : ℝ)
+theorem extremalNumber_completeBipartiteGraph_le
+  (n : ℕ) [Nonempty α] (hcard_le : card α ≤ card β) :
+  extremalNumber n (completeBipartiteGraph α β) ≤
+    ((card β - 1) ^ (1 / card α : ℝ) * n ^ (2 - 1 / card α : ℝ) / 2 + n * (card α - 1) / 2 : ℝ)
 ```
 
 ## Upstreaming to mathlib
