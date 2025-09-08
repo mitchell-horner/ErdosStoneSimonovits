@@ -71,11 +71,6 @@ theorem turanDensity_eq_sInf (H : SimpleGraph W) :
     turanDensity H = sInf { (extremalNumber n H / n.choose 2 : ℝ) | n ∈ Set.Ici 2 } :=
   (tendsto_extremalNumber_div_choose_two H).limUnder_eq
 
-theorem turanDensity_le_extremalNumber_div_choose_two (H : SimpleGraph W) {n : ℕ} (hn : n ≥ 2) :
-    turanDensity H ≤ extremalNumber n H / n.choose 2 := by
-  rw [turanDensity_eq_sInf H]
-  exact csInf_le (bbdBelow_extremalNumber_div_choose_two H) ⟨n, hn, rfl⟩
-
 /-- The **Turán density** of a simple graph `H` is well-defined. -/
 theorem tendsto_turanDensity (H : SimpleGraph W) :
     Tendsto (fun n ↦ (extremalNumber n H / n.choose 2 : ℝ)) atTop (𝓝 (turanDensity H)) := by
@@ -95,8 +90,8 @@ theorem isEquivalent_extremalNumber (h : turanDensity H ≠ 0) :
     simp [h, Nat.choose_eq_zero_iff, hn]
   simpa [isEquivalent_iff_tendsto_one hz] using hπ
 
-/-- If `G` has at least `(H.turanDensity + o(1)) * (card V).choose 2` many edges, then `G`
-contains a copy of `H`. -/
+/-- `n`-vertex simple graphs having at least `(turanDensity H + o(1)) * n ^ 2` edges contain
+`H`, for sufficently large `n`. -/
 theorem isContained_of_card_edgeFinset (H : SimpleGraph W) {ε : ℝ} (hε_pos : 0 < ε) :
     ∃ N, ∀ {V : Type*} [Fintype V] [DecidableEq V], N < card V →
       ∀ {G : SimpleGraph V} [DecidableRel G.Adj],
