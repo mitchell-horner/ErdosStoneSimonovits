@@ -166,7 +166,7 @@ copy of a `completeEquipartiteGraph` in `r + 1` parts each of size `t`.
 This is the minimal-degree version of the **Erdős-Stone theorem**. -/
 theorem completeEquipartiteGraph_isContained_of_minDegree
     {ε : ℝ} (hε : 0 < ε) (r t : ℕ) :
-    ∃ N, ∀ {V : Type*} [Fintype V], N < card V →
+    ∃ N, ∀ {V : Type*} [Fintype V], N ≤ card V →
       ∀ {G : SimpleGraph V} [DecidableRel G.Adj],
         G.minDegree ≥ (1 - 1 / r + ε) * card V
           → completeEquipartiteGraph (r + 1) t ⊑ G := by
@@ -175,7 +175,7 @@ theorem completeEquipartiteGraph_isContained_of_minDegree
     refine ⟨(r + 1) * t, fun {V} _ hcardV {G} _ _ ↦ ?_⟩
     rw [completeEquipartiteGraph_eq_bot_iff.mpr h0, bot_isContained_iff_card_le,
       card_prod, Fintype.card_fin, Fintype.card_fin]
-    exact hcardV.le
+    exact hcardV
   · rw [← Nat.pos_iff_ne_zero] at hr_pos ht_pos
     -- choose `ε'` to ensure `G.minDegree` is large enough
     let ε' := 1 / (↑(r - 1) * r) + ε
@@ -189,9 +189,10 @@ theorem completeEquipartiteGraph_isContained_of_minDegree
     have ⟨N', ih⟩ := completeEquipartiteGraph_isContained_of_minDegree hε' (r - 1) t'
     -- choose `N` at least `(t'.choose t ^ r * t + r * t') * (t '- t) / (r * t' * ε - t)` to
     -- satisfy the pigeonhole principle
-    let N := max N' ⌈(t'.choose t ^ r * t + r * t') * (t' - t) / (r * t' * ε - t)⌉₊
+    let N := max (max 1 N') ⌈(t'.choose t ^ r * t + r * t') * (t' - t) / (r * t' * ε - t)⌉₊
     refine ⟨N, fun {V} _ hcardV {G} _ hδ ↦ ?_⟩
-    have : Nonempty V := card_pos_iff.mp (N.zero_le.trans_lt hcardV)
+    have : Nonempty V := card_pos_iff.mp <| hcardV.trans_lt' <|
+      lt_max_of_lt_left (lt_max_of_lt_left zero_lt_one)
     -- `r` is less than `1 / ε` otherwise `G.minDegree = card V`
     have hrε_lt_1 : r * ε < 1 := by
       have hδ_lt_card : (G.minDegree : ℝ) < (card V : ℝ) := mod_cast G.minDegree_lt_card
@@ -201,7 +202,7 @@ theorem completeEquipartiteGraph_isContained_of_minDegree
       exact hδ.trans' (le_mul_of_one_le_left (card V).cast_nonneg h1_le_rε)
     have ht_lt_t' : t < t' := by
       rw [mul_comm (r : ℝ) (t' : ℝ), mul_assoc] at ht_lt_rt'ε
-      exact_mod_cast ht_lt_rt'ε.trans (mul_lt_of_lt_one_right (mod_cast ht') hrε_lt_1)
+      exact_mod_cast ht_lt_rt'ε.trans_le (mul_le_of_le_one_right (mod_cast ht'.le) hrε_lt_1.le)
     -- identify a `completeEquipartiteGraph r t'` in `G` from the inductive hypothesis
     replace ih : completeEquipartiteGraph r t' ⊑ G := by
       rcases eq_or_ne r 1 with hr_eq_1 | hr_ne_1
@@ -209,7 +210,7 @@ theorem completeEquipartiteGraph_isContained_of_minDegree
       · have h0 : r ≤ 1 ∨ t' = 0 := Or.inl hr_eq_1.le
         rw [completeEquipartiteGraph_eq_bot_iff.mpr h0, bot_isContained_iff_card_le,
           card_prod, Fintype.card_fin, Fintype.card_fin, hr_eq_1, one_mul]
-        apply hcardV.le.trans'
+        apply hcardV.trans'
         exact_mod_cast calc (t' : ℝ)
           _ ≤ r * t' := le_mul_of_one_le_left (by positivity) (mod_cast hr_pos)
           _ ≤ t'.choose t ^ r * t + r * t' := le_add_of_nonneg_left (by positivity)
@@ -219,7 +220,7 @@ theorem completeEquipartiteGraph_isContained_of_minDegree
               mul_comm (r : ℝ) (t' : ℝ),  mul_assoc, mul_le_iff_le_one_right (by positivity)]
             exact hrε_lt_1.le
           _ ≤ ⌈(t'.choose t ^ r * t + r * t') * (t' - t) / (r * t' * ε - t)⌉₊ := Nat.le_ceil _
-          _ ≤ N := Nat.cast_le.mpr (le_max_right N' _)
+          _ ≤ N := Nat.cast_le.mpr (le_max_right _ _)
       -- if `r > 1` then `G` satisfies the inductive hypothesis
       · have hδ' := calc (G.minDegree : ℝ)
           _ ≥ (1 - 1 / (r - 1) + (1 / (r - 1) - 1 / r) + ε) * card V := by
@@ -230,7 +231,7 @@ theorem completeEquipartiteGraph_isContained_of_minDegree
                 sub_sub_cancel, mul_one, one_div_mul_one_div_rev, mul_comm (r : ℝ) _,
                 ← Nat.cast_pred hr_pos, add_assoc]
         rw [← Nat.succ_pred_eq_of_pos hr_pos]
-        exact ih (hcardV.trans_le' (le_max_left N' _)) hδ'
+        exact ih (hcardV.trans' (le_max_of_le_left (le_max_right 1 N'))) hδ'
     obtain ⟨A⟩ := completeEquipartiteGraph_isContained_iff.mp ih
     -- find `t` vertices not in `A` adjacent to `t` vertices in each `A.parts` using the
     -- pigeonhole principle
@@ -238,8 +239,8 @@ theorem completeEquipartiteGraph_isContained_of_minDegree
       apply ErdosStone.filterComplVertsAdjParts.pi.exists_le_card_fiber A hr_pos ht_lt_t' hδ
       rw [← div_le_iff₀ (sub_pos_of_lt ht_lt_rt'ε)]
       trans (N : ℝ)
-      · exact (Nat.le_ceil _).trans (Nat.cast_le.mpr <| le_max_right N' _)
-      · exact_mod_cast hcardV.le
+      · exact (Nat.le_ceil _).trans (Nat.cast_le.mpr <| le_max_right _ _)
+      · exact_mod_cast hcardV
     have ⟨s, hs_subset, h_cards⟩ := exists_subset_card_eq hy
     -- identify the `t` vertices in each `A.parts` as a `completeEquipartiteSubgraph r t` in `A`
     let A' : G.CompleteEquipartiteSubgraph r t := by
@@ -368,7 +369,7 @@ copy of a `completeEquipartiteGraph (r + 1) t`.
 This is the **Erdős-Stone theorem**. -/
 theorem completeEquipartiteGraph_isContained_of_card_edgeFinset
     {ε : ℝ} (hε_pos : 0 < ε) (r t : ℕ) :
-    ∃ N, ∀ {V : Type*} [Fintype V], N < card V →
+    ∃ N, ∀ {V : Type*} [Fintype V], N ≤ card V →
       ∀ {G : SimpleGraph V} [DecidableRel G.Adj],
         #G.edgeFinset ≥ (1 - 1 / r + ε) * card V ^ 2 / 2
         → completeEquipartiteGraph (r + 1) t ⊑ G := by
@@ -379,38 +380,43 @@ theorem completeEquipartiteGraph_isContained_of_card_edgeFinset
   have hc : 0 < c := add_pos_of_nonneg_of_pos r.one_sub_one_div_cast_nonneg hε'
   -- find `N' > card V` sufficent for the minimal-degree version of the Erdős-Stone theorem
   have ⟨N', ih⟩ := completeEquipartiteGraph_isContained_of_minDegree hε' r t
-  refine ⟨⌊c / ε' + N' / √ε'⌋₊, fun {V} _ hcardV {G} _ h ↦ ?_⟩
-  rw [Nat.floor_lt (by positivity)] at hcardV
+  refine ⟨⌈c / ε' + N' / √ε'⌉₊, fun {V} _ hcardV {G} _ h ↦ ?_⟩
+  rw [Nat.ceil_le] at hcardV
   -- find `s` such that `G.induce s` has appropriate minimal-degree
   rw [← add_halves ε, ← add_assoc] at h
-  classical obtain ⟨s, hδ, h_cards_sq⟩ := exists_induce_minDegree_ge_and_card_sq_ge hc.le h
+  classical obtain ⟨s, hδ, hcards_sq⟩ := exists_induce_minDegree_ge_and_card_sq_ge hc.le h
   -- assume `#s` is sufficently large
-  suffices h_cards_sq : (N' ^ 2 : ℝ) < (#s ^ 2 : ℝ) by
-    rw [← Nat.cast_pow, ← Nat.cast_pow, Nat.cast_lt,
-      Nat.pow_lt_pow_iff_left two_ne_zero] at h_cards_sq
+  suffices hcards_sq : (N' ^ 2 : ℝ) ≤ (#s ^ 2 : ℝ) by
+    rw [← Nat.cast_pow, ← Nat.cast_pow, Nat.cast_le,
+      Nat.pow_le_pow_iff_left two_ne_zero] at hcards_sq
     -- find `completeEquipartiteGraph` from minimal-degree version of the Erdős-Stone theorem
-    simp_rw [← card_coe, ← Finset.coe_sort_coe] at h_cards_sq hδ
-    exact (ih h_cards_sq hδ).trans ⟨Copy.induce G s⟩
+    simp_rw [← card_coe, ← Finset.coe_sort_coe] at hcards_sq hδ
+    exact (ih hcards_sq hδ).trans ⟨Copy.induce G s⟩
   -- `x ↦ ε' * x ^ 2 - c * x` is strictly monotonic on `[c / (2 * ε'), ∞)`
-  have h_strictMonoOn : StrictMonoOn (fun x ↦ ε' * x ^ 2 - c * x) (Set.Ici (c / (2 * ε'))) := by
-    refine strictMonoOn_of_deriv_pos (convex_Ici _)
-      (Continuous.continuousOn (by continuity)) (fun x hx ↦ ?_)
-    rw [deriv_sub ((differentiableAt_id'.pow 2).const_mul ε') (differentiableAt_id'.const_mul c),
-      deriv_const_mul _ (differentiableAt_id'.pow 2), deriv_pow 2, Nat.cast_two, pow_one,
-      ← mul_assoc ε' 2 x, mul_comm ε' 2, deriv_const_mul _ differentiableAt_id', deriv_id'',
-      mul_one, sub_pos, ← div_lt_iff₀' (mul_pos two_pos hε')]
-    rwa [interior_Ici, Set.mem_Ioi] at hx
+  have hMonoOn : MonotoneOn (fun x ↦ ε' * x ^ 2 - c * x) (Set.Ici (c / (2 * ε'))) := by
+    refine monotoneOn_of_deriv_nonneg (convex_Ici _) ?_ ?_ (fun x hx ↦ ?_)
+    · apply Continuous.continuousOn
+      exact (continuous_const.mul (continuous_id'.pow 2)).sub (continuous_mul_left c)
+    · apply Differentiable.differentiableOn
+      exact ((differentiable_const ε').mul (differentiable_id'.pow 2)).sub
+        (differentiable_id'.const_mul c)
+    · rw [deriv_sub ((differentiableAt_id'.pow 2).const_mul ε') (differentiableAt_id'.const_mul c),
+        deriv_const_mul _ (differentiableAt_id'.pow 2), deriv_pow 2, Nat.cast_two, pow_one,
+        ← mul_assoc ε' 2 x, mul_comm ε' 2, deriv_const_mul _ differentiableAt_id', deriv_id'',
+        mul_one, sub_nonneg, ← div_le_iff₀' (mul_pos two_pos hε')]
+      rw [interior_Ici, Set.mem_Ioi] at hx
+      exact hx.le
   -- prove `#s` is sufficently large
   calc (#s ^ 2 : ℝ)
-    _ ≥ ε'* card V ^ 2 - c * card V := h_cards_sq
-    _ > ε' * (c / ε' + N' / √ε') ^ 2 - c * (c / ε' + N' / √ε') := by
-        have h_le : c / (2 * ε') ≤ c / ε' + N' / √ε' := by
+    _ ≥ ε'* card V ^ 2 - c * card V := hcards_sq
+    _ ≥ ε' * (c / ε' + N' / √ε') ^ 2 - c * (c / ε' + N' / √ε') := by
+        have hle : c / (2 * ε') ≤ c / ε' + N' / √ε' := by
           trans c / ε'
           · rw [mul_comm, ← div_div, half_le_self_iff]
             exact div_nonneg hc.le hε'.le
           · rw [le_add_iff_nonneg_right]
             exact div_nonneg N'.cast_nonneg (sqrt_nonneg ε')
-        exact h_strictMonoOn h_le (h_le.trans hcardV.le) hcardV
+        exact hMonoOn hle (hle.trans hcardV) hcardV
     _ = N' ^ 2 + N' * c / sqrt ε' := by
         rw [add_pow_two, mul_add ε', div_pow _ √ε', sq_sqrt hε'.le,
           mul_div_cancel₀ _ hε'.ne', add_comm _ (N' ^ 2 : ℝ), add_sub_assoc, add_right_inj,
@@ -427,7 +433,7 @@ copy of any `r + 1`-colorable graph.
 This is a corollary of the **Erdős-Stone theorem**. -/
 theorem isContained_of_card_edgeFinset_of_colorable
     {r : ℕ} (hc : H.Colorable (r + 1)) {ε : ℝ} (hε_pos : 0 < ε) :
-    ∃ N, ∀ {V : Type*} [Fintype V], N < card V →
+    ∃ N, ∀ {V : Type*} [Fintype V], N ≤ card V →
       ∀ {G : SimpleGraph V} [DecidableRel G.Adj],
         #G.edgeFinset ≥ (1 - 1 / r + ε) * card V ^ 2 / 2 → H ⊑ G := by
   obtain ⟨C⟩ := hc
@@ -461,7 +467,7 @@ lemma extremalNumber_le_of_colorable
   rw [← Fintype.card_fin n] at hn
   contrapose! h_free with hcard_edges
   rw [not_free]
-  exact h hn hcard_edges.le
+  exact h hn.le hcard_edges.le
 
 omit [Fintype W] in
 /-- If the `H` is not `r`-colorable and `r > 0`, then `extremalNumber n H` is greater than
@@ -601,7 +607,7 @@ contains a copy of `H`.
 This is a corollary of the **Erdős-Stone-Simonovits theorem**. -/
 theorem isContained_of_card_edgeFinset_of_chromaticNumber
     {r : ℕ} (hr_pos : 0 < r) (hχ : H.chromaticNumber = r + 1) {ε : ℝ} (hε_pos : 0 < ε) :
-    ∃ N, ∀ {V : Type*} [Fintype V], N < card V →
+    ∃ N, ∀ {V : Type*} [Fintype V], N ≤ card V →
       ∀ {G : SimpleGraph V} [DecidableRel G.Adj],
         #G.edgeFinset ≥ (1 - 1 / r + ε) * (card V).choose 2 → H ⊑ G := by
   rw [← turanDensity_eq_of_chromaticNumber hr_pos hχ]
