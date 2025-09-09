@@ -166,13 +166,13 @@ copy of a `completeEquipartiteGraph` in `r + 1` parts each of size `t`.
 This is the minimal-degree version of the **Erdős-Stone theorem**. -/
 theorem completeEquipartiteGraph_isContained_of_minDegree
     {ε : ℝ} (hε : 0 < ε) (r t : ℕ) :
-    ∃ N, ∀ {V : Type*} [Fintype V] [DecidableEq V], N < card V →
+    ∃ N, ∀ {V : Type*} [Fintype V], N < card V →
       ∀ {G : SimpleGraph V} [DecidableRel G.Adj],
         G.minDegree ≥ (1 - 1 / r + ε) * card V
           → completeEquipartiteGraph (r + 1) t ⊑ G := by
   rcases show (r = 0 ∨ t = 0) ∨ r ≠ 0 ∧ t ≠ 0 by tauto with h0 | ⟨hr_pos, ht_pos⟩
   · rw [← Nat.le_zero_eq, ← @Nat.add_le_add_iff_right r 0 1, zero_add] at h0
-    refine ⟨(r + 1) * t, fun {V} _ _ hcardV {G} _ _ ↦ ?_⟩
+    refine ⟨(r + 1) * t, fun {V} _ hcardV {G} _ _ ↦ ?_⟩
     rw [completeEquipartiteGraph_eq_bot_iff.mpr h0, bot_isContained_iff_card_le,
       card_prod, Fintype.card_fin, Fintype.card_fin]
     exact hcardV.le
@@ -190,7 +190,7 @@ theorem completeEquipartiteGraph_isContained_of_minDegree
     -- choose `N` at least `(t'.choose t ^ r * t + r * t') * (t '- t) / (r * t' * ε - t)` to
     -- satisfy the pigeonhole principle
     let N := max N' ⌈(t'.choose t ^ r * t + r * t') * (t' - t) / (r * t' * ε - t)⌉₊
-    refine ⟨N, fun {V} _ _ hcardV {G} _ hδ ↦ ?_⟩
+    refine ⟨N, fun {V} _ hcardV {G} _ hδ ↦ ?_⟩
     have : Nonempty V := card_pos_iff.mp (N.zero_le.trans_lt hcardV)
     -- `r` is less than `1 / ε` otherwise `G.minDegree = card V`
     have hrε_lt_1 : r * ε < 1 := by
@@ -234,7 +234,7 @@ theorem completeEquipartiteGraph_isContained_of_minDegree
     obtain ⟨A⟩ := completeEquipartiteGraph_isContained_iff.mp ih
     -- find `t` vertices not in `A` adjacent to `t` vertices in each `A.parts` using the
     -- pigeonhole principle
-    obtain ⟨y, hy⟩ := by
+    obtain ⟨y, hy⟩ := by classical
       apply ErdosStone.filterComplVertsAdjParts.pi.exists_le_card_fiber A hr_pos ht_lt_t' hδ
       rw [← div_le_iff₀ (sub_pos_of_lt ht_lt_rt'ε)]
       trans (N : ℝ)
@@ -254,10 +254,10 @@ theorem completeEquipartiteGraph_isContained_of_minDegree
       ⟨A', s.map (.subtype _), by rwa [← card_map] at h_cards, fun v hv i w hw ↦ ?_⟩
     obtain ⟨v', hv', hv⟩ := Finset.mem_map.mp hv
     apply hs_subset at hv'
-    rw [mem_filter] at hv'
+    classical rw [mem_filter] at hv'
     rw [show A'.parts i = y i by rfl, ← hv'.2] at hw
     rw [← hv, Function.Embedding.coe_subtype]
-    exact ErdosStone.filterComplVertsAdjParts.pi.mem_val A v' i w hw
+    classical exact ErdosStone.filterComplVertsAdjParts.pi.mem_val A v' i w hw
 
 /-- Repeatedly remove minimal degree vertices until `(G.induce s).minDegree` is at least `c * #s`
 and count the edges removed in the process.
@@ -368,7 +368,7 @@ copy of a `completeEquipartiteGraph (r + 1) t`.
 This is the **Erdős-Stone theorem**. -/
 theorem completeEquipartiteGraph_isContained_of_card_edgeFinset
     {ε : ℝ} (hε_pos : 0 < ε) (r t : ℕ) :
-    ∃ N, ∀ {V : Type*} [Fintype V] [DecidableEq V], N < card V →
+    ∃ N, ∀ {V : Type*} [Fintype V], N < card V →
       ∀ {G : SimpleGraph V} [DecidableRel G.Adj],
         #G.edgeFinset ≥ (1 - 1 / r + ε) * card V ^ 2 / 2
         → completeEquipartiteGraph (r + 1) t ⊑ G := by
@@ -379,11 +379,11 @@ theorem completeEquipartiteGraph_isContained_of_card_edgeFinset
   have hc : 0 < c := add_pos_of_nonneg_of_pos r.one_sub_one_div_cast_nonneg hε'
   -- find `N' > card V` sufficent for the minimal-degree version of the Erdős-Stone theorem
   have ⟨N', ih⟩ := completeEquipartiteGraph_isContained_of_minDegree hε' r t
-  refine ⟨⌊c / ε' + N' / √ε'⌋₊, fun {V} _ _ hcardV {G} _ h ↦ ?_⟩
+  refine ⟨⌊c / ε' + N' / √ε'⌋₊, fun {V} _ hcardV {G} _ h ↦ ?_⟩
   rw [Nat.floor_lt (by positivity)] at hcardV
   -- find `s` such that `G.induce s` has appropriate minimal-degree
   rw [← add_halves ε, ← add_assoc] at h
-  obtain ⟨s, hδ, h_cards_sq⟩ := exists_induce_minDegree_ge_and_card_sq_ge hc.le h
+  classical obtain ⟨s, hδ, h_cards_sq⟩ := exists_induce_minDegree_ge_and_card_sq_ge hc.le h
   -- assume `#s` is sufficently large
   suffices h_cards_sq : (N' ^ 2 : ℝ) < (#s ^ 2 : ℝ) by
     rw [← Nat.cast_pow, ← Nat.cast_pow, Nat.cast_lt,
@@ -427,7 +427,7 @@ copy of any `r + 1`-colorable graph.
 This is a corollary of the **Erdős-Stone theorem**. -/
 theorem isContained_of_card_edgeFinset_of_colorable
     {r : ℕ} (hc : H.Colorable (r + 1)) {ε : ℝ} (hε_pos : 0 < ε) :
-    ∃ N, ∀ {V : Type*} [Fintype V] [DecidableEq V], N < card V →
+    ∃ N, ∀ {V : Type*} [Fintype V], N < card V →
       ∀ {G : SimpleGraph V} [DecidableRel G.Adj],
         #G.edgeFinset ≥ (1 - 1 / r + ε) * card V ^ 2 / 2 → H ⊑ G := by
   obtain ⟨C⟩ := hc
@@ -437,7 +437,7 @@ theorem isContained_of_card_edgeFinset_of_colorable
     rw [show card (C.colorClass c) = f c from rfl]
     exact le_sup (mem_univ c)
   have ⟨N, ih⟩ := completeEquipartiteGraph_isContained_of_card_edgeFinset hε_pos r (univ.sup f)
-  exact ⟨N, fun {V} _ _ hcardV {G} _ h ↦ hH.trans (ih hcardV h)⟩
+  exact ⟨N, fun {V} _ hcardV {G} _ h ↦ hH.trans (ih hcardV h)⟩
 
 end ErdosStone
 
@@ -601,7 +601,7 @@ contains a copy of `H`.
 This is a corollary of the **Erdős-Stone-Simonovits theorem**. -/
 theorem isContained_of_card_edgeFinset_of_chromaticNumber
     {r : ℕ} (hr_pos : 0 < r) (hχ : H.chromaticNumber = r + 1) {ε : ℝ} (hε_pos : 0 < ε) :
-    ∃ N, ∀ {V : Type*} [Fintype V] [DecidableEq V], N < card V →
+    ∃ N, ∀ {V : Type*} [Fintype V], N < card V →
       ∀ {G : SimpleGraph V} [DecidableRel G.Adj],
         #G.edgeFinset ≥ (1 - 1 / r + ε) * (card V).choose 2 → H ⊑ G := by
   rw [← turanDensity_eq_of_chromaticNumber hr_pos hχ]
