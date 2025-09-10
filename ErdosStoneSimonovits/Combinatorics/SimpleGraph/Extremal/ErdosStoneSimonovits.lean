@@ -241,7 +241,7 @@ theorem completeEquipartiteGraph_isContained_of_minDegree
       trans (N : ℝ)
       · exact (Nat.le_ceil _).trans (Nat.cast_le.mpr <| le_max_right _ _)
       · exact_mod_cast hcardV
-    have ⟨s, hs_subset, h_cards⟩ := exists_subset_card_eq hy
+    have ⟨s, hs_subset, hcards⟩ := exists_subset_card_eq hy
     -- identify the `t` vertices in each `A.parts` as a `completeEquipartiteSubgraph r t` in `A`
     let A' : G.CompleteEquipartiteSubgraph r t := by
       refine ⟨fun i ↦ (y i).val, fun i ↦ (mem_powersetCard.mp (y i).prop).right,
@@ -252,7 +252,7 @@ theorem completeEquipartiteGraph_isContained_of_minDegree
     -- identify the `t` vertices not in `A` and the `completeEquipartiteSubgraph r t` in `A`
     -- as a `completeEquipartiteSubgraph (r + 1) t` in `G`
     refine completeEquipartiteGraph_succ_isContained_iff.mpr
-      ⟨A', s.map (.subtype _), by rwa [← card_map] at h_cards, fun v hv i w hw ↦ ?_⟩
+      ⟨A', s.map (.subtype _), by rwa [← card_map] at hcards, fun v hv i w hw ↦ ?_⟩
     obtain ⟨v', hv', hv⟩ := Finset.mem_map.mp hv
     apply hs_subset at hv'
     classical rw [mem_filter] at hv'
@@ -272,10 +272,10 @@ lemma exists_induce_minDegree_ge_and_card_edgeFinset_ge
   rcases le_or_lt (c * #G.support.toFinset) (G.induce G.support.toFinset).minDegree with hδ | hδ
   -- if `minDegree` is already at least `c * card G.support`
   · refine ⟨G.support.toFinset, G.support.coe_toFinset.subset, hδ, ?_⟩
-    suffices h_card_edges : #(G.induce G.support).edgeFinset ≥ #G.edgeFinset
+    suffices hcard_edges : #(G.induce G.support).edgeFinset ≥ #G.edgeFinset
         - c * (card G.support ^ 2 - #G.support.toFinset ^ 2) / 2
         - c * (card G.support - #G.support.toFinset) / 2 by
-      convert h_card_edges
+      convert hcard_edges
       all_goals exact G.support.coe_toFinset
     rw [card_edgeFinset_induce_support, ← G.support.toFinset_card,
       sub_self, mul_zero,  zero_div, sub_zero, sub_self, mul_zero, zero_div, sub_zero]
@@ -284,11 +284,11 @@ lemma exists_induce_minDegree_ge_and_card_edgeFinset_ge
       rw [G.support.toFinset_card] at hδ
       convert hδ
       all_goals exact G.support.coe_toFinset.symm
-    have h_card_support_pos : 0 < card G.support := by
+    have hcard_support_pos : 0 < card G.support := by
       contrapose! hδ
       rw [Nat.eq_zero_of_le_zero hδ, Nat.cast_zero, mul_zero]
       exact Nat.cast_nonneg (G.induce G.support).minDegree
-    have : Nonempty G.support := card_pos_iff.mp h_card_support_pos
+    have : Nonempty G.support := card_pos_iff.mp hcard_support_pos
     -- delete a minimal degree vertex
     have ⟨x, hδ_eq_degx⟩ := exists_minimal_degree_vertex (G.induce G.support)
     let G' := G.deleteIncidenceSet ↑x
@@ -327,7 +327,7 @@ lemma exists_induce_minDegree_ge_and_card_edgeFinset_ge
         - c * (card G.support - #s) / 2 := by linarith
 termination_by card G.support
 decreasing_by
-  exact (G.card_support_deleteIncidenceSet x.prop).trans_lt (Nat.pred_lt_of_lt h_card_support_pos)
+  exact (G.card_support_deleteIncidenceSet x.prop).trans_lt (Nat.pred_lt_of_lt hcard_support_pos)
 
 /-- Repeatedly remove minimal degree vertices until `(G.induce s).minDegree` is at least `c * #s`
 and `#s ^ 2 ≥ ε * card V ^ 2 - c * card V`, that is, `#s ≈ √ε * card V` when `c ≈ 0`.
@@ -459,13 +459,13 @@ lemma extremalNumber_le_of_colorable
     {r : ℕ} (hc : H.Colorable (r + 1)) {ε : ℝ} (hε_pos : 0 < ε) :
     ∃ N, ∀ n > N, extremalNumber n H ≤ (1 - 1 / r + ε) * n ^ 2 / 2 := by
   obtain ⟨N, h⟩ := isContained_of_card_edgeFinset_of_colorable hc hε_pos
-  have h_pos : 0 ≤ 1 - 1 / r + ε := add_nonneg r.one_sub_one_div_cast_nonneg hε_pos.le
+  have hpos : 0 ≤ 1 - 1 / r + ε := add_nonneg r.one_sub_one_div_cast_nonneg hε_pos.le
   conv =>
     enter [1, N, n, hn]
     rw [← Fintype.card_fin n, extremalNumber_le_iff_of_nonneg _ (by positivity)]
-  refine ⟨N, fun n hn {G} _ h_free ↦ ?_⟩
+  refine ⟨N, fun n hn {G} _ hfree ↦ ?_⟩
   rw [← Fintype.card_fin n] at hn
-  contrapose! h_free with hcard_edges
+  contrapose! hfree with hcard_edges
   rw [not_free]
   exact h hn.le hcard_edges.le
 
@@ -568,14 +568,14 @@ This is a corollary of the **Erdős-Stone-Simonovits theorem**. -/
 theorem tendsto_extremalNumber_div_choose_two_of_chromaticNumber
     {r : ℕ} (hr_pos : 0 < r) (hχ : H.chromaticNumber = r + 1) :
     Tendsto (fun (n : ℕ) ↦ (extremalNumber n H / n.choose 2 : ℝ)) atTop (𝓝 (1 - 1 / r)) := by
-  have h_littleo := IsLittleO.trans_isTheta
+  have hlittleo := IsLittleO.trans_isTheta
     (isLittleO_extremalNumber_of_chromaticNumber hr_pos hχ) (isTheta_choose 2).symm
-  have h_tendsto : Tendsto (fun (n : ℕ) ↦ (n ^ 2 / 2 / n.choose 2 : ℝ)) atTop (𝓝 1) := by
+  have htendsto : Tendsto (fun (n : ℕ) ↦ (n ^ 2 / 2 / n.choose 2 : ℝ)) atTop (𝓝 1) := by
     have hz : ∀ᶠ (n : ℕ) in atTop, (n.choose 2 : ℝ) ≠ 0 :=
       eventually_atTop.mpr ⟨2, fun _ h ↦ mod_cast (Nat.choose_pos h).ne'⟩
     simpa only [isEquivalent_iff_tendsto_one hz] using (isEquivalent_choose 2).symm
   simpa [sub_div, ← mul_div]
-    using h_littleo.tendsto_div_nhds_zero.add <| h_tendsto.const_mul (1 - 1 / r : ℝ)
+    using hlittleo.tendsto_div_nhds_zero.add <| htendsto.const_mul (1 - 1 / r : ℝ)
 
 /-- If the chromatic number of `H` equals `r + 1 > 0`, then the Turán density of `H`
 equals `1 - 1 / r`.

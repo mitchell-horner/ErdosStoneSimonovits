@@ -43,7 +43,7 @@ lemma card_filterPowersetCardSubsetNeighborFinset_le [Nonempty β]
     (h : (completeBipartiteGraph α β).Free G) :
     #(filterPowersetCardSubsetNeighborFinset G (card α))
       ≤ (((card V).choose (card α)) * (card β - 1) : ℝ) := by
-  simp_rw [card_filter _, sum_product, ← card_filter, ← @card_univ V, ← card_powersetCard,
+  simp_rw [card_filter, sum_product, ← card_filter, ← @card_univ V, ← card_powersetCard,
     ← nsmul_eq_mul, ← sum_const, ← Nat.cast_pred card_pos, ← Nat.cast_sum, Nat.cast_le]
   refine sum_le_sum (fun t ht_card ↦ ?_)
   rw [mem_powersetCard_univ] at ht_card
@@ -65,34 +65,34 @@ function evaluated at the average divided by `(card α).factorial`.
 
 This is an auxiliary lemma for the **Kővári–Sós–Turán theorem**. -/
 lemma le_card_filterPowersetCardSubsetNeighborFinset [Nonempty V] [Nonempty α]
-    (h_avg : card α - 1 ≤ (∑ v : V, G.degree v : ℝ) / card V) :
-    ((card V)*((descPochhammer ℝ (card α)).eval
+    (havg : card α - 1 ≤ (∑ v : V, G.degree v : ℝ) / card V) :
+    (card V * ((descPochhammer ℝ (card α)).eval
         ((∑ v, G.degree v : ℝ) / card V) / (card α).factorial) : ℝ)
       ≤ #(filterPowersetCardSubsetNeighborFinset G (card α)) := by
-  simp_rw [card_filter _, sum_product_right, ← card_filter, powersetCard_eq_filter,
+  simp_rw [card_filter, sum_product_right, ← card_filter, powersetCard_eq_filter,
     filter_comm, powerset_univ, filter_subset_univ, ← powersetCard_eq_filter,
     card_powersetCard, card_neighborFinset_eq_degree, Nat.cast_sum,
     ← le_inv_mul_iff₀ (mod_cast card_pos : 0 < (card V : ℝ)), mul_sum,
     div_eq_mul_inv _ (card V : ℝ), mul_comm _ (card V : ℝ)⁻¹, mul_sum]
-  rw [div_eq_inv_mul, mul_sum] at h_avg
+  rw [div_eq_inv_mul, mul_sum] at havg
   exact descPochhammer_eval_div_factorial_le_sum_choose
-    (by positivity) _ _ (by simp) (by simp) h_avg
+    (by positivity) _ _ (by simp) (by simp) havg
 
 /-- If the average degree of vertices in `G` is at least `card α - 1` and `G` is
 `(completeBipartiteGraph α β).Free`, then `G` has at most `bound` edges.
 
 This is an auxiliary lemma for the **Kővári–Sós–Turán theorem**. -/
 theorem card_edgeFinset_le_bound [Nonempty V] [Nonempty α] [Nonempty β]
-    (h_avg : card α - 1 ≤ (∑ v : V, G.degree v : ℝ) / card V)
-    (h_free : (completeBipartiteGraph α β).Free G) :
+    (havg : card α - 1 ≤ (∑ v : V, G.degree v : ℝ) / card V)
+    (hfree : (completeBipartiteGraph α β).Free G) :
     #G.edgeFinset ≤ bound (card V) (card α) (card β) := by
   suffices h : card V * (2 * #G.edgeFinset / card V - card α + 1) ^ card α / (card α).factorial
       ≤ ((card V ^ card α / (card α).factorial) * (card β - 1) : ℝ) by
     have hcard_sub_one_nonneg : 0 ≤ (card β - 1 : ℝ) :=
       sub_nonneg_of_le (Nat.one_le_cast.mpr card_pos)
-    have h_avg' : 0 ≤ (2 * #G.edgeFinset / card V - card α + 1 : ℝ) := by
+    have havg' : 0 ≤ (2 * #G.edgeFinset / card V - card α + 1 : ℝ) := by
       rwa [← Nat.cast_sum, sum_degrees_eq_twice_card_edges,
-        Nat.cast_mul, Nat.cast_two, ← sub_nonneg, ← sub_add] at h_avg
+        Nat.cast_mul, Nat.cast_two, ← sub_nonneg, ← sub_add] at havg
     -- rearrange expression for `bound`
     rwa [mul_comm _ (card β - 1 : ℝ), mul_div, div_le_div_iff_of_pos_right (by positivity),
       ← Real.rpow_le_rpow_iff (by positivity) (by positivity) (by positivity : 0 < (card α : ℝ)⁻¹),
@@ -116,11 +116,11 @@ theorem card_edgeFinset_le_bound [Nonempty V] [Nonempty α] [Nonempty β]
         ((∑ v, G.degree v : ℝ)/card V)/(card α).factorial)
     · rw [← Nat.cast_two, ← Nat.cast_mul, ← sum_degrees_eq_twice_card_edges, Nat.cast_sum,
         mul_div, div_le_div_iff_of_pos_right (by positivity), mul_le_mul_left (by positivity)]
-      exact pow_le_descPochhammer_eval h_avg
-    · exact le_card_filterPowersetCardSubsetNeighborFinset h_avg
+      exact pow_le_descPochhammer_eval havg
+    · exact le_card_filterPowersetCardSubsetNeighborFinset havg
   -- counting `v`
   · trans ((card V).choose (card α))*(card β - 1)
-    · exact card_filterPowersetCardSubsetNeighborFinset_le h_free
+    · exact card_filterPowersetCardSubsetNeighborFinset_le hfree
     · apply mul_le_mul_of_nonneg_right (Nat.choose_le_pow_div (card α) (card V))
       exact sub_nonneg_of_le (mod_cast Nat.succ_le_of_lt card_pos)
 
@@ -134,21 +134,21 @@ variable [DecidableEq V]
 This is the **Kővári–Sós–Turán theorem**. -/
 theorem card_edgeFinset_le_of_completeBipartiteGraph_free
     [Nonempty α] (hcard_le : card α ≤ card β) {G : SimpleGraph V} [DecidableRel G.Adj]
-    (h_free : (completeBipartiteGraph α β).Free G) :
+    (hfree : (completeBipartiteGraph α β).Free G) :
     #G.edgeFinset ≤ ((card β - 1) ^ (1 / card α : ℝ) * card V ^ (2 - 1 / card α : ℝ) / 2
       + card V * (card α - 1) / 2 : ℝ) := by
   have : Nonempty β := card_pos_iff.mp (card_pos.trans_le hcard_le)
   cases isEmpty_or_nonempty V
-  · have h_two_sub_inv_card_ne_zero : 2 - (card α : ℝ)⁻¹ ≠ 0 := by
+  · have htwo_sub_inv_card_ne_zero : 2 - (card α : ℝ)⁻¹ ≠ 0 := by
       apply sub_ne_zero_of_ne
       apply ne_of_gt
       exact (card α).cast_inv_le_one.trans_lt one_lt_two
-    simp [h_two_sub_inv_card_ne_zero]
-  · rcases lt_or_ge (∑ v, G.degree v : ℝ) (card V * (card α - 1) : ℝ) with h_sum_lt | h_avg
+    simp [htwo_sub_inv_card_ne_zero]
+  · rcases lt_or_ge (∑ v, G.degree v : ℝ) (card V * (card α - 1) : ℝ) with hsum_lt | havg
     -- if avg degree less than `card a - 1`
     · rw [← Nat.cast_sum, sum_degrees_eq_twice_card_edges,
-        Nat.cast_mul, Nat.cast_two, ← lt_div_iff₀' zero_lt_two] at h_sum_lt
-      apply h_sum_lt.le.trans
+        Nat.cast_mul, Nat.cast_two, ← lt_div_iff₀' zero_lt_two] at hsum_lt
+      apply hsum_lt.le.trans
       apply le_add_of_nonneg_left
       apply div_nonneg _ zero_le_two
       apply mul_nonneg
@@ -156,8 +156,8 @@ theorem card_edgeFinset_le_of_completeBipartiteGraph_free
         exact sub_nonneg_of_le (mod_cast Nat.succ_le_of_lt card_pos)
       · exact Real.rpow_nonneg (card V).cast_nonneg (2 - 1 / card α)
     -- -- if avg degree at least `card α - 1`
-    · rw [ge_iff_le, ← le_div_iff₀' (mod_cast card_pos)] at h_avg
-      exact KovariSosTuran.card_edgeFinset_le_bound h_avg h_free
+    · rw [ge_iff_le, ← le_div_iff₀' (mod_cast card_pos)] at havg
+      exact KovariSosTuran.card_edgeFinset_le_bound havg hfree
 
 /-- The extremal numbers of `completeBipartiteGraph α β` are at most
 `(card β - 1) ^ (1 / card α) * n ^ (2 - 1 / card α) / 2 + n * (card α - 1) / 2`.
@@ -169,7 +169,7 @@ theorem extremalNumber_completeBipartiteGraph_le
     ((card β - 1) ^ (1 / card α : ℝ) * n ^ (2 - 1 / card α : ℝ) / 2 + n * (card α - 1) / 2 : ℝ) := by
   rw [← Fintype.card_fin n,
     extremalNumber_le_iff_of_nonneg _ (KovariSosTuran.bound_nonneg card_pos hcard_le)]
-  intro G _ h_free
-  exact card_edgeFinset_le_of_completeBipartiteGraph_free hcard_le h_free
+  intro G _ hfree
+  exact card_edgeFinset_le_of_completeBipartiteGraph_free hcard_le hfree
 
 end SimpleGraph
