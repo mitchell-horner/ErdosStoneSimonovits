@@ -11,7 +11,7 @@ Suppose $\varepsilon > 0$ is a positive real number, $r$ and $t$ are natural num
 ```lean
 theorem completeEquipartiteGraph_isContained_of_minDegree
   {ε : ℝ} (hε : 0 < ε) (r t : ℕ) :
-  ∃ N, ∀ {V : Type*} [Fintype V] [DecidableEq V], N ≤ card V →
+  ∃ N, ∀ {V : Type*} [Fintype V], N ≤ card V →
     ∀ {G : SimpleGraph V} [DecidableRel G.Adj],
       G.minDegree ≥ (1 - 1 / r + ε) * card V
         → completeEquipartiteGraph (r + 1) t ⊑ G
@@ -24,7 +24,7 @@ Suppose $\varepsilon > 0$ is a positive real number, $r$ and $t$ are natural num
 ```lean
 theorem completeEquipartiteGraph_isContained_of_card_edgeFinset
   {ε : ℝ} (hε_pos : 0 < ε) (r t : ℕ) :
-  ∃ N, ∀ {V : Type*} [Fintype V] [DecidableEq V], N ≤ card V →
+  ∃ N, ∀ {V : Type*} [Fintype V], N ≤ card V →
     ∀ {G : SimpleGraph V} [DecidableRel G.Adj],
       #G.edgeFinset ≥ (1 - 1 / r + ε) * card V ^ 2 / 2
       → completeEquipartiteGraph (r + 1) t ⊑ G
@@ -37,7 +37,7 @@ Suppose $\varepsilon > 0$ is a positive real number and $G$ is a simple graph. I
 ```lean
 theorem isContained_of_card_edgeFinset_of_colorable
   {r : ℕ} (hc : H.Colorable (r + 1)) {ε : ℝ} (hε_pos : 0 < ε) :
-  ∃ N, ∀ {V : Type*} [Fintype V] [DecidableEq V], N ≤ card V →
+  ∃ N, ∀ {V : Type*} [Fintype V], N ≤ card V →
     ∀ {G : SimpleGraph V} [DecidableRel G.Adj],
       #G.edgeFinset ≥ (1 - 1 / r + ε) * card V ^ 2 / 2 → H ⊑ G
 ```
@@ -105,7 +105,7 @@ Suppose $\varepsilon > 0$ is a positive real number and $G$ is a simple graph. I
 ```lean
 theorem isContained_of_card_edgeFinset_of_chromaticNumber
   {r : ℕ} (hr_pos : 0 < r) (hχ : H.chromaticNumber = r + 1) {ε : ℝ} (hε_pos : 0 < ε) :
-  ∃ N, ∀ {V : Type*} [Fintype V] [DecidableEq V], N ≤ card V →
+  ∃ N, ∀ {V : Type*} [Fintype V], N ≤ card V →
     ∀ {G : SimpleGraph V} [DecidableRel G.Adj],
       #G.edgeFinset ≥ (1 - 1 / r + ε) * (card V).choose 2 → H ⊑ G
 ```
