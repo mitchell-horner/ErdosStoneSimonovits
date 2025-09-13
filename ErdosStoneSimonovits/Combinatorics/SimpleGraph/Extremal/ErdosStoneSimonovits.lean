@@ -248,7 +248,7 @@ theorem completeEquipartiteGraph_isContained_of_minDegree
         fun i j h v hv w hw ↦ ?_⟩
       have hyi := mem_powersetCard.mp (y i).prop
       have hyj := mem_powersetCard.mp (y j).prop
-      exact A.Adj h v (hyi.1 hv) w (hyj.1 hw)
+      exact A.Adj h (hyi.1 hv) (hyj.1 hw)
     -- identify the `t` vertices not in `A` and the `completeEquipartiteSubgraph r t` in `A`
     -- as a `completeEquipartiteSubgraph (r + 1) t` in `G`
     refine completeEquipartiteGraph_succ_isContained_iff.mpr

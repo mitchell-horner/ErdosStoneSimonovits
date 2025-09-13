@@ -2,7 +2,7 @@ import Mathlib
 import ErdosStoneSimonovits.Combinatorics.SimpleGraph.Coloring
 import ErdosStoneSimonovits.Combinatorics.SimpleGraph.Extremal.Turan
 
-open Fintype Finset
+open Fintype Finset Function
 
 namespace SimpleGraph
 
@@ -27,7 +27,7 @@ abbrev completeEquipartiteGraph (r t : ℕ) : SimpleGraph (Fin r × Fin t) :=
 The difference is that the former vertices are a product type whereas the latter vertices are a
 *dependent* product type. -/
 def completeEquipartiteGraph.completeMultipartiteGraph :
-    completeEquipartiteGraph r t ≃g completeMultipartiteGraph (Function.const (Fin r) (Fin t)) :=
+    completeEquipartiteGraph r t ≃g completeMultipartiteGraph (const (Fin r) (Fin t)) :=
   { (Equiv.sigmaEquivProd (Fin r) (Fin t)).symm with map_rel_iff' := by simp }
 
 lemma completeEquipartiteGraph_adj {v w} :
@@ -120,7 +120,7 @@ variable [Fintype V]
 theorem isContained_completeEquipartiteGraph_of_colorable {n : ℕ} (C : G.Coloring (Fin n))
     (t : ℕ) (h : ∀ c, card (C.colorClass c) ≤ t) : G ⊑ completeEquipartiteGraph n t := by
   have (c : Fin n) : Nonempty (C.colorClass c ↪ Fin t) := by
-    rw [Function.Embedding.nonempty_iff_card_le, Fintype.card_fin]
+    rw [Embedding.nonempty_iff_card_le, Fintype.card_fin]
     exact h c
   have F (c : Fin n) := Classical.arbitrary (C.colorClass c ↪ Fin t)
   have hF {c₁ c₂ v₁ v₂} (hc : c₁ = c₂) (hv : F c₁ v₁ = F c₂ v₂) : v₁.val = v₂.val := by
@@ -150,32 +150,32 @@ structure CompleteEquipartiteSubgraph (G : SimpleGraph V) (r t : ℕ) where
   parts : Fin r → Finset V
   /-- Each part is size `t`. -/
   card_parts (i : Fin r) : #(parts i) = t
-  Adj : ∀ ⦃i₁ i₂⦄, i₁ ≠ i₂ → ∀ v ∈ parts i₁, ∀ w ∈ parts i₂, G.Adj v w
+  /-- Vertices in distinct parts are adjacent. -/
+  Adj : Pairwise (fun ⦃i₁ i₂⦄ ↦ ∀ ⦃v₁⦄, v₁ ∈ parts i₁ → ∀ ⦃v₂⦄, v₂ ∈ parts i₂ → G.Adj v₁ v₂)
 
 variable {r t : ℕ} (A : G.CompleteEquipartiteSubgraph r t)
 
 namespace CompleteEquipartiteSubgraph
 
 /-- The parts in a `G.CompleteEquipartiteSubgraph r t` are pairwise disjoint. -/
-theorem pairwiseDisjoint_parts : univ.toSet.PairwiseDisjoint A.parts := by
-  intro _ _ _ _ h
-  rw [Function.onFun_apply, disjoint_left]
-  intro v h₁
-  have nhadj : ¬G.Adj v v := G.loopless v
-  contrapose! nhadj with h₂
-  exact A.Adj h v h₁ v h₂
+theorem pairwise_disjoint_on_parts : Pairwise (Disjoint on A.parts) := by
+  refine A.Adj.mono (fun i₁ i₂ h ↦ ?_)
+  rw [onFun_apply, disjoint_left]
+  intro v hv₁
+  contrapose! h with hv₂
+  exact ⟨v, hv₁, v, hv₂, G.loopless v⟩
 
 /-- The finset of vertices in a `G.CompleteEquipartiteSubgraph r t`. -/
-@[simp]
-abbrev verts : Finset V := univ.disjiUnion A.parts A.pairwiseDisjoint_parts
+abbrev verts : Finset V :=
+  univ.disjiUnion A.parts (A.pairwise_disjoint_on_parts.set_pairwise univ.toSet)
 
 /-- There are `r * t` vertices in a complete equipartite subgraph with `r` parts of size `t`. -/
-theorem card_verts : #A.verts = r * t := by simp [card_parts]
+theorem card_verts : #A.verts = r * t := by simp [verts, card_parts]
 
 /-- A complete equipartite subgraph gives rise to a copy of a complete equipartite graph. -/
 noncomputable def toCopy : Copy (completeEquipartiteGraph r t) G := by
   have (i : Fin r) : Nonempty (Fin t ↪ A.parts i) := by
-    rw [Function.Embedding.nonempty_iff_card_le, Fintype.card_fin, card_coe, A.card_parts i]
+    rw [Embedding.nonempty_iff_card_le, Fintype.card_fin, card_coe, A.card_parts i]
   have fᵣ (i : Fin r) : Fin t ↪ A.parts i := Classical.arbitrary (Fin t ↪ A.parts i)
   let f : (Fin r) × (Fin t) ↪ V := by
     use fun (i, x) ↦ fᵣ i x
@@ -185,10 +185,10 @@ noncomputable def toCopy : Copy (completeEquipartiteGraph r t) G := by
     rcases eq_or_ne i₁ i₂ with heq | hne
     · rw [heq, ← Subtype.ext_iff_val.ne]
       exact (fᵣ i₂).injective.ne (hne heq)
-    · exact (A.Adj hne _ (fᵣ i₁ x₁).prop _ (fᵣ i₂ x₂).prop).ne
+    · exact (A.Adj hne (fᵣ i₁ x₁).prop (fᵣ i₂ x₂).prop).ne
   use ⟨f, ?_⟩, f.injective
-  intro (i₁, x₁) (i₂, x₂) hr
-  exact A.Adj hr _ (fᵣ i₁ x₁).prop _ (fᵣ i₂ x₂).prop
+  intro (i₁, x₁) (i₂, x₂) hne
+  exact A.Adj hne (fᵣ i₁ x₁).prop (fᵣ i₂ x₂).prop
 
 /-- A copy of a complete equipartite graph identifies a complete equipartite subgraph. -/
 def ofCopy (f : Copy (completeEquipartiteGraph r t) G) : G.CompleteEquipartiteSubgraph r t where
@@ -227,10 +227,10 @@ theorem completeEquipartiteGraph_succ_isContained_iff {n : ℕ} :
       refine ⟨fun i ↦ A'.parts i.castSucc, fun i ↦ A'.card_parts i.castSucc, ?_⟩
       intro i₁ i₂ hne v₁ hv₁ v₂ hv₂
       rw [← Fin.castSucc_inj.ne] at hne
-      exact A'.Adj hne v₁ hv₁ v₂ hv₂
+      exact A'.Adj hne hv₁ hv₂
     refine ⟨A, A'.parts (Fin.last n), A'.card_parts (Fin.last n), fun v₁ hv₁ i v₂ hv₂ ↦ ?_⟩
     have hne : i.castSucc ≠ Fin.last n := Fin.exists_castSucc_eq.mp ⟨i, rfl⟩
-    exact (A'.Adj hne v₂ hv₂ v₁ hv₁).symm
+    exact (A'.Adj hne hv₂ hv₁).symm
   · refine ⟨fun i ↦ if hi : ↑i < n then A.parts ⟨i, hi⟩ else s, fun i ↦ ?_,
       fun i₁ i₂ hne v₁ hv₁ v₂ hv₂ ↦ ?_⟩
     · by_cases hi : ↑i < n
@@ -240,7 +240,7 @@ theorem completeEquipartiteGraph_succ_isContained_iff {n : ℕ} :
         <;> simp [hi₁, hi₂] at hne hv₁ hv₂ ⊢
       · have hne : i₁.castLT hi₁ ≠ i₂.castLT hi₂ := by
           simp [Fin.ext_iff, Fin.val_ne_of_ne hne]
-        exact A.Adj hne v₁ hv₁ v₂ hv₂
+        exact A.Adj hne hv₁ hv₂
       · exact (hadj v₂ hv₂ ⟨i₁, hi₁⟩ v₁ hv₁).symm
       · exact hadj v₁ hv₁ ⟨i₂, hi₂⟩ v₂ hv₂
       · absurd hne
