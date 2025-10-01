@@ -136,3 +136,10 @@ The progress towards upstreaming these results to [mathlib](https://github.com/l
 - [ ] The Erdős-Stone-Simonovits theorem (equivalence version)
 - [ ] The Erdős-Stone(-Simonovits) theorem (chromatic number subgraph version)
 - [ ] The Kővári–Sós–Turán theorem
+
+## Future work
+
+Future work formalising the forbidden subgraph problem from extremal graph theory could include:
+
+- The supersaturation theorem ([mitchell-horner/Supersaturation](https://github.com/mitchell-horner/Supersaturation))
+
