@@ -141,6 +141,20 @@ end Coloring
 
 end CompleteEquipartiteGraph
 
+section IsCompleteMultipartiteBetween
+
+variable {ι : Type*} {parts : ι → Set V}
+
+def IsCompleteMultipartiteBetween (G : SimpleGraph V) (parts : ι → Set V) :=
+  Pairwise fun ⦃i₁ i₂⦄ ↦
+    ∀ ⦃v₁⦄, v₁ ∈ parts i₁ → ∀ ⦃v₂⦄, v₂ ∈ parts i₂ → G.Adj v₁ v₂
+
+theorem IsCompleteMultipartiteBetween.pairwise_disjoint
+    (h : G.IsCompleteMultipartiteBetween parts) : Pairwise (Disjoint on parts) :=
+  fun _ _ hne ↦ Set.disjoint_left.mpr fun v hv₁ hv₂ ↦ (G.loopless v) (h hne hv₁ hv₂)
+
+end IsCompleteMultipartiteBetween
+
 section CompleteEquipartiteSubgraph
 
 /-- The complete equipartite subgraphs in `r` parts each of size `t` in `G` are the `r` subsets
