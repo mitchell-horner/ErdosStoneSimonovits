@@ -209,7 +209,7 @@ section CompleteBipartiteFinSubgraph
 
 variable {α β : Type*} [Fintype α] [Fintype β]
 
-/-- A complete bipartite (fin-)subgraph of `a` and `b` parts is a "left" subset of `a` vertices
+/-- A finite complete bipartite subgraph of `a` and `b` parts is a "left" subset of `a` vertices
 and a "right" subset of `b` vertices such that every vertex in the "left" subset is adjacent to
 every vertex in the "right" subset. -/
 structure CompleteBipartiteFinSubgraph (G : SimpleGraph V) (a b : ℕ) where
