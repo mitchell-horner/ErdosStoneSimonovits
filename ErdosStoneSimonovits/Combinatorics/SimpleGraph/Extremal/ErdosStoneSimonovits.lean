@@ -245,10 +245,10 @@ theorem completeEquipartiteGraph_isContained_of_minDegree
     -- identify the `t` vertices in each `K.parts` as a `CompleteEquipartiteSubgraph r t` in `K`
     let K' : G.CompleteEquipartiteSubgraph r t := by
       refine ⟨fun i ↦ (y i).val, fun i ↦ (mem_powersetCard.mp (y i).prop).right,
-        fun i j h v hv w hw ↦ ?_⟩
+        fun i j hne v hv w hw ↦ ?_⟩
       have hyi := mem_powersetCard.mp (y i).prop
       have hyj := mem_powersetCard.mp (y j).prop
-      exact K.isCompleteMulitpartiteBetween h (hyi.1 hv) (hyj.1 hw)
+      exact K.isCompleteBetween hne (hyi.1 hv) (hyj.1 hw)
     -- identify the `t` vertices not in `K` and the `CompleteEquipartiteSubgraph r t` in `K`
     -- as a `CompleteEquipartiteSubgraph (r + 1) t` in `G`
     refine completeEquipartiteGraph_succ_isContained_iff.mpr

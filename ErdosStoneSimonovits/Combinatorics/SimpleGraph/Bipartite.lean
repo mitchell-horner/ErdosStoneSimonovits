@@ -1,4 +1,5 @@
 import Mathlib
+import ErdosStoneSimonovits.Combinatorics.SimpleGraph.Basic
 import ErdosStoneSimonovits.Combinatorics.SimpleGraph.Copy
 import ErdosStoneSimonovits.Combinatorics.SimpleGraph.DegreeSum
 
@@ -194,17 +195,6 @@ theorem isBipartiteWith_sum_degrees_eq_card_edges' (h : G.IsBipartiteWith s t) :
 
 end IsBipartiteWith
 
-section IsCompleteBipartiteBetween
-
-def IsCompleteBipartiteBetween (G : SimpleGraph V) (s t : Set V) :=
-  ∀ ⦃v₁⦄, v₁ ∈ s → ∀ ⦃v₂⦄, v₂ ∈ t → G.Adj v₁ v₂
-
-theorem IsCompleteBipartiteBetween.disjoint
-    (h : G.IsCompleteBipartiteBetween s t) : Disjoint s t :=
-  Set.disjoint_left.mpr fun v hv₁ hv₂ ↦ (G.loopless v) (h hv₁ hv₂)
-
-end IsCompleteBipartiteBetween
-
 section CompleteBipartiteFinSubgraph
 
 variable {α β : Type*} [Fintype α] [Fintype β]
@@ -220,7 +210,7 @@ structure CompleteBipartiteFinSubgraph (G : SimpleGraph V) (a b : ℕ) where
   right : Finset V
   card_right : #right = b
   /-- Vertices in the "left" and "right" subsets are adjacent. -/
-  isCompleteBipartiteBetween : G.IsCompleteBipartiteBetween left right
+  isCompleteBetween : G.IsCompleteBetween left right
 
 variable {a b : ℕ} (K : G.CompleteBipartiteFinSubgraph a b)
 
@@ -228,7 +218,7 @@ namespace CompleteBipartiteFinSubgraph
 
 /-- The "left" and "right" parts in a complete bipartite subgraph are disjoint. -/
 theorem disjoint_left_right : Disjoint K.left K.right :=
-  disjoint_left.mpr fun v hv₁ hv₂ ↦ (G.loopless v) (K.isCompleteBipartiteBetween hv₁ hv₂)
+  disjoint_left.mpr fun v hv₁ hv₂ ↦ (G.loopless v) (K.isCompleteBetween hv₁ hv₂)
 
 /-- The finset of vertices in a complete bipartite subgraph. -/
 @[simp]
@@ -253,19 +243,19 @@ noncomputable def toCopy : Copy (completeBipartiteGraph (Fin a) (Fin b)) G := by
     match s₁, s₂ with
     | Sum.inl p₁, Sum.inl p₂ => simp [← Subtype.ext_iff]
     | Sum.inr p₁, Sum.inl p₂ =>
-      simpa using (K.isCompleteBipartiteBetween (fs p₂).prop (ft p₁).prop).ne'
+      simpa using (K.isCompleteBetween (fs p₂).prop (ft p₁).prop).ne'
     | Sum.inl p₁, Sum.inr p₂ =>
-      simpa using (K.isCompleteBipartiteBetween (fs p₁).prop (ft p₂).prop).symm.ne'
+      simpa using (K.isCompleteBetween (fs p₁).prop (ft p₂).prop).symm.ne'
     | Sum.inr p₁, Sum.inr p₂ => simp [← Subtype.ext_iff]
   refine ⟨⟨f.toFun, fun {s₁ s₂} hadj ↦ ?_⟩, f.injective⟩
   rcases hadj with ⟨hs₁, hs₂⟩ | ⟨hs₁, hs₂⟩
   all_goals dsimp [f]
   · rw [← Sum.inl_getLeft s₁ hs₁, ← Sum.inr_getRight s₂ hs₂,
       Sum.elim_inl, Sum.elim_inr]
-    exact K.isCompleteBipartiteBetween (by simp) (by simp)
+    exact K.isCompleteBetween (by simp) (by simp)
   · rw [← Sum.inr_getRight s₁ hs₁, ← Sum.inl_getLeft s₂ hs₂,
       Sum.elim_inl, Sum.elim_inr, adj_comm]
-    exact K.isCompleteBipartiteBetween (by simp) (by simp)
+    exact K.isCompleteBetween (by simp) (by simp)
 
 /-- A copy of a complete bipartite graph identifies a complete bipartite subgraph. -/
 def ofCopy (f : Copy (completeBipartiteGraph α β) G) :
@@ -274,7 +264,7 @@ def ofCopy (f : Copy (completeBipartiteGraph α β) G) :
   card_left := by rw [card_map, card_univ]
   right := univ.map ⟨f ∘ Sum.inr, f.injective.comp Sum.inr_injective⟩
   card_right := by rw [card_map, card_univ]
-  isCompleteBipartiteBetween _ h₁ _ h₂ := by
+  isCompleteBetween _ h₁ _ h₂ := by
     rw [mem_coe, mem_map] at h₁ h₂
     obtain ⟨_, _, h₁⟩ := h₁
     obtain ⟨_, _, h₂⟩ := h₂
