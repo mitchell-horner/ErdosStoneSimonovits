@@ -58,6 +58,36 @@ theorem minDegree_lt_card [DecidableRel G.Adj] [Nonempty V] :
   rw [eq_of_subset_of_card_le (subset_univ _) h]
   exact mem_univ v
 
+namespace Iso
+
+variable {W : Type*} [Fintype W] {G : SimpleGraph V} [DecidableRel G.Adj]
+  {G' : SimpleGraph W} [DecidableRel G'.Adj] (f : G ≃g G')
+
+include f in
+theorem degree_eq (x : V) : G.degree x = G'.degree (f x) := by
+  simp_rw [← card_neighborSet_eq_degree]
+  convert Fintype.ofEquiv_card (Iso.mapNeighborSet f x).symm
+
+include f in
+theorem minDegree_eq :
+    G.minDegree = G'.minDegree := by
+  rcases isEmpty_or_nonempty V with h | h
+  · have h' : IsEmpty W := f.symm.isEmpty
+    simp [minDegree]
+  · have h' : Nonempty W := f.symm.nonempty
+    rcases lt_trichotomy G.minDegree G'.minDegree with h | h | h
+    · obtain ⟨x, hx⟩ := exists_minimal_degree_vertex G
+      rw [hx, Iso.degree_eq f x] at h
+      contrapose! h
+      exact minDegree_le_degree G' (f x)
+    · exact h
+    · obtain ⟨x', hx'⟩ := exists_minimal_degree_vertex G'
+      rw [hx', Iso.degree_eq f.symm x'] at h
+      contrapose! h
+      exact minDegree_le_degree G (f.symm x')
+
+end Iso
+
 end Finite
 
 section Support
