@@ -11,7 +11,7 @@ section IsExtremal
 variable {V : Type*} [Fintype V] {G : SimpleGraph V} [DecidableRel G.Adj]
 
 /-- `G` is an extremal graph satisfying `p` if `G` has the maximum number of edges of any simple
-graph satisfying `p`. -/
+graph, with fixed vertices, satisfying `p`. -/
 def IsExtremal (G : SimpleGraph V) [DecidableRel G.Adj] (p : SimpleGraph V → Prop) :=
   p G ∧ ∀ ⦃G' : SimpleGraph V⦄ [DecidableRel G'.Adj], p G' → #G'.edgeFinset ≤ #G.edgeFinset
 
