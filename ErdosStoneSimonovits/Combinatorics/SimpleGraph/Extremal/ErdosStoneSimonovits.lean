@@ -41,7 +41,7 @@ lemma le_card_edgeFinset_between_verts :
   rw [← isBipartiteWith_sum_degrees_eq_card_edges (between_verts_isBipartiteWith K),
     ← nsmul_eq_mul, ← sum_const, Nat.cast_sum]
   exact sum_le_sum (fun v hv ↦ sub_le_iff_le_add.mpr <|
-    mod_cast (G.minDegree_le_degree v).trans (degree_le_between_plus hv))
+    mod_cast (G.minDegree_le_degree v).trans (degree_le_between_add hv))
 
 /-- For `v ∈ K.vertsᶜ \ filterComplVertsAdjParts`, since `v` is adjacent to fewer than `t`
 vertices in at least one part of the complete equipartite subgraph, it follows that `v` is
