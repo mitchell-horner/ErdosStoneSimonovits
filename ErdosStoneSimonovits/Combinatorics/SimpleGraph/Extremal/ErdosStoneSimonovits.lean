@@ -607,9 +607,8 @@ contains a copy of `H`.
 This is a corollary of the **Erdős-Stone-Simonovits theorem**. -/
 theorem isContained_of_card_edgeFinset_of_chromaticNumber
     {r : ℕ} (hr_pos : 0 < r) (hχ : H.chromaticNumber = r + 1) {ε : ℝ} (hε_pos : 0 < ε) :
-    ∃ N, ∀ {V : Type*} [Fintype V], N ≤ card V →
-      ∀ {G : SimpleGraph V} [DecidableRel G.Adj],
-        #G.edgeFinset ≥ (1 - 1 / r + ε) * (card V).choose 2 → H ⊑ G := by
+    ∃ N, ∀ n ≥ N, ∀ {G : SimpleGraph (Fin n)} [DecidableRel G.Adj],
+      #G.edgeFinset ≥ (1 - 1 / r + ε) * n.choose 2 → H ⊑ G := by
   rw [← turanDensity_eq_of_chromaticNumber hr_pos hχ]
   exact isContained_of_card_edgeFinset H hε_pos
 
