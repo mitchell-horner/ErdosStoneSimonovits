@@ -48,11 +48,15 @@ noncomputable def turanDensity (H : SimpleGraph W) :=
 
 theorem isGLB_turanDensity (H : SimpleGraph W) :
     IsGLB { (extremalNumber n H / n.choose 2 : ℝ) | n ∈ Set.Ici 2 } (turanDensity H) := by
-  apply Real.isGLB_limUnder_of_bddBelow_antitoneOn_Ici
-  · refine ⟨0, fun x ⟨_, _, hx⟩ ↦ ?_⟩
+  have h_bdd : BddBelow { (extremalNumber n H / n.choose 2 : ℝ) | n ∈ Set.Ici 2 } := by
+    refine ⟨0, fun x ⟨_, _, hx⟩ ↦ ?_⟩
     rw [← hx]
     positivity
-  · exact antitoneOn_extremalNumber_div_choose_two H
+  apply Real.isGLB_of_bddBelow_antitoneOn_Ici_tendsto_atTop
+    h_bdd (antitoneOn_extremalNumber_div_choose_two H)
+  have h_tto := Real.tendsto_csInf_of_bddBelow_antitoneOn_Ici
+    h_bdd (antitoneOn_extremalNumber_div_choose_two H)
+  rwa [← h_tto.limUnder_eq] at h_tto
 
 theorem turanDensity_eq_csInf (H : SimpleGraph W) :
     turanDensity H = sInf { (extremalNumber n H / n.choose 2 : ℝ) | n ∈ Set.Ici 2 } :=
