@@ -52,7 +52,7 @@ theorem isGLB_turanDensity (H : SimpleGraph W) :
     refine ⟨0, fun x ⟨_, _, hx⟩ ↦ ?_⟩
     rw [← hx]
     positivity
-  apply Real.isGLB_of_bddBelow_antitoneOn_Ici_tendsto_atTop
+  apply Real.isGLB_of_bddBelow_antitoneOn_Ici_tendsto
     h_bdd (antitoneOn_extremalNumber_div_choose_two H)
   have h_tto := Real.tendsto_csInf_of_bddBelow_antitoneOn_Ici
     h_bdd (antitoneOn_extremalNumber_div_choose_two H)
