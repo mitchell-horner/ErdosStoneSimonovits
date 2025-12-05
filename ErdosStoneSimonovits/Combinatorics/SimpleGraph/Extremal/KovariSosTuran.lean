@@ -51,7 +51,7 @@ lemma card_filterPowersetCardSubsetNeighborFinset_le [Nonempty β]
   have ⟨t', ht'_sub, ht'_card⟩ := exists_subset_card_eq h
   rw [← Nat.pred_eq_sub_one, Nat.succ_pred_eq_of_pos card_pos] at ht'_card
   rw [not_free, completeBipartiteGraph_isContained_iff]
-  refine ⟨t, ht_card, t', ht'_card, fun a ha b hb ↦ ?_⟩
+  refine ⟨t, t', ht_card, ht'_card, fun a ha b hb ↦ ?_⟩
   apply ht'_sub at hb
   rw [mem_filter] at hb
   apply hb.2 at ha
