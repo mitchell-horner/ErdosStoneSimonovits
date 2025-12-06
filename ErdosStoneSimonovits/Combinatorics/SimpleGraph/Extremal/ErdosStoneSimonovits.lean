@@ -1,7 +1,7 @@
 import Mathlib
 import ErdosStoneSimonovits.Analysis.SpecialFunctions.Choose
 import ErdosStoneSimonovits.Combinatorics.SimpleGraph.Bipartite
-import ErdosStoneSimonovits.Combinatorics.SimpleGraph.CompleteEquipartite
+import ErdosStoneSimonovits.Combinatorics.SimpleGraph.Equipartite
 import ErdosStoneSimonovits.Combinatorics.SimpleGraph.Extremal.TuranDensity
 import ErdosStoneSimonovits.Data.Finset.Union
 import ErdosStoneSimonovits.Data.Nat.Cast.Order.Field
@@ -134,7 +134,7 @@ noncomputable abbrev filterComplVertsAdjParts.pi :
     let s := Multiset.of_mem_filter h i
     ⟨s.choose, s.choose_spec.1⟩
 
-theorem filterComplVertsAdjParts.pi.mem_val (w : filterComplVertsAdjParts K t) (i : Fin r) :
+theorem filterComplVertsAdjParts.pi.mem_val (i : Fin r) (w : filterComplVertsAdjParts K t) :
     ∀ v ∈ (filterComplVertsAdjParts.pi K w i).val, G.Adj w v :=
   let s := Multiset.of_mem_filter w.prop i
   s.choose_spec.right
@@ -255,13 +255,13 @@ theorem completeEquipartiteGraph_isContained_of_minDegree
     -- identify the `t` vertices not in `K` and the `CompleteEquipartiteSubgraph r t` in `K`
     -- as a `CompleteEquipartiteSubgraph (r + 1) t` in `G`
     refine completeEquipartiteGraph_succ_isContained_iff.mpr
-      ⟨K', s.map (.subtype _), by rwa [← card_map] at hcards, fun v hv i w hw ↦ ?_⟩
-    obtain ⟨v', hv', hv⟩ := Finset.mem_map.mp hv
-    apply hs_subset at hv'
-    classical rw [mem_filter] at hv'
-    rw [show K'.parts i = y i by rfl, ← hv'.2] at hw
-    rw [← hv, Function.Embedding.coe_subtype]
-    classical exact ErdosStone.filterComplVertsAdjParts.pi.mem_val K v' i w hw
+      ⟨K', s.map (.subtype _), by rwa [← card_map] at hcards, fun i v hv w hw ↦ ?_⟩
+    obtain ⟨w', hw', hw⟩ := Finset.mem_map.mp hw
+    apply hs_subset at hw'
+    classical rw [mem_filter] at hw'
+    rw [show K'.parts i = y i by rfl, ← hw'.2] at hv
+    rw [← hw, Function.Embedding.coe_subtype]
+    classical exact (ErdosStone.filterComplVertsAdjParts.pi.mem_val K i w' v hv).symm
 
 /-- Repeatedly remove minimal degree vertices until `(G.induce s).minDegree` is at least `c * #s`
 and count the edges removed in the process.
