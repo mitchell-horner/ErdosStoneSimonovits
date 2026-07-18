@@ -179,16 +179,15 @@ This is the **Kővári-Sós-Turán theorem**. -/
 theorem zarankiewicz_le (m n : ℕ) {s t : ℕ} (hs : 1 ≤ s) (ht : s ≤ t) :
     zarankiewicz m n s t
       ≤ ((t - 1) ^ (s⁻¹ : ℝ) * m * n ^ (1 - (s⁻¹ : ℝ)) + (s - 1) * n : ℝ) := by
-  have hs' : 1 ≤ card (Fin s) := by rwa [← Fintype.card_fin s] at hs
-  have ht' : card (Fin s) ≤ card (Fin t) := by
-    rwa [← Fintype.card_fin s, ← Fintype.card_fin t] at ht
-  rw [← Fintype.card_fin m, ← Fintype.card_fin n, ← Fintype.card_fin s, ← Fintype.card_fin t,
-    ← KovariSosTuran.bound, zarankiewicz_le_iff_of_nonneg rfl rfl rfl rfl <|
-    KovariSosTuran.bound_nonneg _ _ hs' (hs'.trans ht')]
-  intro G _
   have : NeZero s := ⟨Nat.pos_iff_ne_zero.mp hs⟩
   have : NeZero t := ⟨Nat.pos_iff_ne_zero.mp <| hs.trans ht⟩
-  exact KovariSosTuran.card_edgeFinset_le_bound_of_completeBipartiteGraph_free
+  rw [← KovariSosTuran.bound, zarankiewicz_le_iff_of_nonneg
+    (Fintype.card_fin m) (Fintype.card_fin n) (Fintype.card_fin s) (Fintype.card_fin t) <|
+    KovariSosTuran.bound_nonneg m n hs (hs.trans ht)]
+  conv =>
+    enter [G, inst, h_le, h_free, 2]
+    rw [← Fintype.card_fin m, ← Fintype.card_fin n, ← Fintype.card_fin s, ← Fintype.card_fin t]
+  exact fun G _ ↦ KovariSosTuran.card_edgeFinset_le_bound_of_completeBipartiteGraph_free
 
 /-- An upper bound on the symmetric Zarankiewicz function.
 
@@ -196,11 +195,11 @@ This is a corollary of the **Kővári-Sós-Turán theorem**. -/
 theorem symm_zarankiewicz_le (n : ℕ) {s t : ℕ} (hs : 1 ≤ s) (ht : s ≤ t) :
     zarankiewicz n n s t
       ≤ ((t - 1) ^ (s : ℝ)⁻¹ * n ^ (2 - (s : ℝ)⁻¹) + (s - 1) * n : ℝ) := by
-  have hone_add_one_sub_inv_card_ne_zero : 1 + (1 - (s : ℝ)⁻¹) ≠ 0 := by
+  have h_one_add_one_sub_inv_card_ne_zero : 1 + (1 - (s : ℝ)⁻¹) ≠ 0 := by
       rw [← add_sub_assoc, ← show (2 : ℝ) = (1 : ℝ) + (1 : ℝ) by norm_num]
       exact sub_ne_zero_of_ne <| ne_of_gt <| s.cast_inv_le_one.trans_lt one_lt_two
   rw [show (2 : ℝ) = (1 : ℝ) + (1 : ℝ) by norm_num, add_sub_assoc,
-    Real.rpow_one_add' (by positivity) hone_add_one_sub_inv_card_ne_zero, ← mul_assoc]
+    Real.rpow_one_add' (by positivity) h_one_add_one_sub_inv_card_ne_zero, ← mul_assoc]
   exact zarankiewicz_le n n hs ht
 
 /-- An upper bound on the extremal numbers of `completeBipartiteGraph α β`.
