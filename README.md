@@ -147,16 +147,16 @@ theorem extremalNumber_completeBipartiteGraph_le
 
 The progress towards upstreaming these results to [mathlib](https://github.com/leanprover-community/mathlib4) is as follows:
 
-- [ ] The Erdős-Stone theorem (minimal degree version)
-- [ ] The Erdős-Stone theorem
-- [ ] The Erdős-Stone theorem (colorable subgraph version)
-- [ ] The Erdős-Stone-Simonovits theorem
-- [ ] The Erdős-Stone-Simonovits theorem (little-O version)
-- [ ] The Erdős-Stone-Simonovits theorem (Turán density version)
-- [ ] The Erdős-Stone-Simonovits theorem (equivalence version)
-- [ ] The Erdős-Stone(-Simonovits) theorem (chromatic number subgraph version)
-- [ ] The Kővári–Sós–Turán theorem
-- [ ] The Kővári–Sós–Turán theorem (extremal number version)
+- [x] [The Erdős-Stone theorem (minimal degree version)](https://github.com/leanprover-community/mathlib4/pull/28685)
+- [ ] [The Erdős-Stone theorem](https://github.com/leanprover-community/mathlib4/pull/28686)
+- [ ] [The Erdős-Stone theorem (colorable subgraph version)](https://github.com/leanprover-community/mathlib4/pull/28686)
+- [ ] [The Erdős-Stone-Simonovits theorem](https://github.com/leanprover-community/mathlib4/pull/28687)
+- [ ] [The Erdős-Stone-Simonovits theorem (little-O version)](https://github.com/leanprover-community/mathlib4/pull/28689)
+- [ ] [The Erdős-Stone-Simonovits theorem (Turán density version)](https://github.com/leanprover-community/mathlib4/pull/28689)
+- [ ] [The Erdős-Stone-Simonovits theorem (equivalence version)](https://github.com/leanprover-community/mathlib4/pull/28689)
+- [ ] [The Erdős-Stone(-Simonovits) theorem (chromatic number subgraph version)](https://github.com/leanprover-community/mathlib4/pull/28689)
+- [ ] [The Kővári–Sós–Turán theorem](https://github.com/leanprover-community/mathlib4/pull/25841)
+- [ ] [The Kővári–Sós–Turán theorem (extremal number version)](https://github.com/leanprover-community/mathlib4/pull/25841)
 
 ## Future work
 
