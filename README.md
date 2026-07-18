@@ -1,8 +1,8 @@
-# Formalising the Erdős-Stone-Simonovits theorem and the Kővári–Sós–Turán theorem in Lean
+# Formalising the Erdős-Stone-Simonovits theorem and the Kővári-Sós-Turán theorem in Lean
 
 [![Lean Action CI](https://github.com/mitchell-horner/ErdosStoneSimonovitsKovariSosTuran/actions/workflows/lean_action_ci.yml/badge.svg)](https://github.com/mitchell-horner/ErdosStoneSimonovitsKovariSosTuran/actions/workflows/lean_action_ci.yml)
 
-This repository contains a formalisation of the Erdős-Stone-Simonovits theorem and the Kővári–Sós–Turán theorem in [Lean](https://lean-lang.org/). The statements of the results are as follows:
+This repository contains a formalisation of the Erdős-Stone-Simonovits theorem and the Kővári-Sós-Turán theorem in [Lean](https://lean-lang.org/). The statements of the results are as follows:
 
 **The Erdős-Stone theorem (minimal degree version)**
 
@@ -155,8 +155,8 @@ The progress towards upstreaming these results to [mathlib](https://github.com/l
 - [ ] [The Erdős-Stone-Simonovits theorem (Turán density version)](https://github.com/leanprover-community/mathlib4/pull/28689)
 - [ ] [The Erdős-Stone-Simonovits theorem (equivalence version)](https://github.com/leanprover-community/mathlib4/pull/28689)
 - [ ] [The Erdős-Stone(-Simonovits) theorem (chromatic number subgraph version)](https://github.com/leanprover-community/mathlib4/pull/28689)
-- [ ] [The Kővári–Sós–Turán theorem](https://github.com/leanprover-community/mathlib4/pull/25841)
-- [ ] [The Kővári–Sós–Turán theorem (extremal number version)](https://github.com/leanprover-community/mathlib4/pull/25841)
+- [ ] [The Kővári-Sós-Turán theorem](https://github.com/leanprover-community/mathlib4/pull/25841)
+- [ ] [The Kővári-Sós-Turán theorem (extremal number version)](https://github.com/leanprover-community/mathlib4/pull/25841)
 
 ## Future work
 
