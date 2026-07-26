@@ -160,7 +160,7 @@ The progress towards upstreaming these results to [mathlib](https://github.com/l
 
 ## Future work
 
-Future work formalising the forbidden subgraph problem could include:
+Future work could include:
 
 - The supersaturation theorem ([mitchell-horner/Supersaturation](https://github.com/mitchell-horner/Supersaturation))
 
